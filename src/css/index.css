@@ -1,0 +1,31 @@
+@font-face {
+    font-family: 'Anton';
+    src: url('../assets/fonts/Anton-Regular.ttf') format('truetype');
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Barlow';
+    src: url('../assets/fonts/BarlowCondensed-Regular.ttf') format('truetype');
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../assets/fonts/BebasNeue-Regular.ttf') format('truetype');
+    font-style: normal;
+}
+*{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    text-decoration: none;
+}
+
+body{
+    font-family: 'Barlow', Arial, Helvetica, sans-serif;
+}
+
+:root{
+    --bg-color: #161616;
+    --txt-color: #dfdfdf;
+    
+}

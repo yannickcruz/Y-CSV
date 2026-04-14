@@ -1,0 +1,8 @@
+.app-container{
+    display: flex;
+    background-color: var(--bg-color);
+}
+#main-content{
+    display: flex;
+    flex-direction: column;
+}
