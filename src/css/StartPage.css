@@ -1,17 +1,19 @@
 #StartPage{
-    width: 100vw;
+    width: 100%;
     display: flex;
+    flex: 1 ;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
 }
 
 #box-container{
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15rem;
+    width: 100%;
+    max-width: 800px;
+    padding: 3rem;
     border: 2px solid var(--txt-color);
     border-radius: 0.5rem;
     
@@ -29,4 +31,71 @@
     font-size: 1.2rem;
     color: var(--txt-color);
     margin-bottom: 2rem;
+}
+
+.start-btns{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn{
+    background-color: var(--txt-color);
+    color: var(--bg-color);
+    padding: 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    border: 2px solid var(--txt-color);
+}
+
+.btn:hover{
+    background-color: var(--bg-color);
+    color: var(--txt-color);
+    cursor: pointer;
+}
+
+@media(max-width: 1200px){
+    #box-container{
+        width: 80%;
+    }
+}
+
+@media(max-width: 768px){
+    #box-container{
+        width: 60%;
+    }
+
+    #title{
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    #description{
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .btn{
+        padding: 0.8rem;
+    }
+}
+
+@media(max-width: 400px){
+
+    #box-container{
+        width: 50%;
+    }
+
+    #title{
+        font-size: 1.5rem;
+    }
+
+    #description{
+        font-size: 0.9rem;
+    }
+
+    .btn{
+        padding: 0.5rem;
+    }
 }

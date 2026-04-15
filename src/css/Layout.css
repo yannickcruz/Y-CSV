@@ -1,8 +1,11 @@
 .app-container{
     display: flex;
+    flex-direction: column;
     background-color: var(--bg-color);
+    min-height: 100dvh;
 }
 #main-content{
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
