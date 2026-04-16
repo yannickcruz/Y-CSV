@@ -49,6 +49,11 @@
     border: 2px solid var(--txt-color);
 }
 
+.btn a{
+    color: inherit;
+    padding: 1rem 0;
+}
+
 .btn:hover{
     background-color: var(--bg-color);
     color: var(--txt-color);

@@ -1,0 +1,23 @@
+#Editor{
+    display: flex;
+    flex-direction: column;
+}
+
+#editor-header{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 1000;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--header-color);
+}
+
+#editor-title{
+    font-size: 2rem;
+    color: var(--txt-color);
+    padding: 1rem;
+}

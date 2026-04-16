@@ -1,4 +1,5 @@
 import "../css/StartPage.css"
+import { NavLink } from "react-router-dom"
 
 const StartPage = () => {
     return(
@@ -7,8 +8,8 @@ const StartPage = () => {
                 <h1 id="title">Bem-vindo ao Y-CSV</h1>
                 <p id="description">Faça o upload do seu arquivo CSV e comece a analisar seus dados.</p>
                 <ul className="start-btns">
-                    <li><button className="btn">Fazer Upload do CSV</button></li>
-                    <li><button className="btn">Como Usar</button></li>
+                    <li className="btn"><NavLink to="/editor" >Fazer Upload do CSV</NavLink></li> {/*Editor colocado temporariamente para construção do componente*/}
+                    <li className="btn"><NavLink to="/how-use" >Como Usar</NavLink></li>
                 </ul>
             </div>
         </section>
