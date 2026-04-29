@@ -40,3 +40,50 @@
     text-align: left;
     background-color: var(--txt-color);
 }
+
+#csv-table .csv-cell:hover{
+    cursor: pointer;
+    background-color: #000000;
+    color: var(--txt-color);
+}
+
+#edit-cell{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+}    
+
+#cell-selected{
+    width: 100%;
+    font-size: 1rem;
+    border: 1px solid #000000;
+    background-color: var(--txt-color);
+    box-sizing: border-box;
+    overflow-y: hidden;
+    resize: none;
+    padding: 0.25rem;
+}
+
+#button-list{
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-button{
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: var(--header-color);
+    color: var(--txt-color);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.action-button:hover{
+    background-color: #000000;
+    color: var(--txt-color);
+}

@@ -1,5 +1,5 @@
 import "../css/Editor.css"
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const Editor = (csv) => {
 
@@ -21,7 +21,61 @@ const Editor = (csv) => {
         }
     ];
 
+    const csv_example_id = csv_example.map((item, index) => ({ id: index, ...item }));
+
+    const textareaRef = useRef(null);
+    const [cell, setCell] = useState(null);
+    const [currentCellEdit, setCurrentCellEdit] = useState(null);
+    const [editedData, setEditedData] = useState('');
+    const [data, setData] = useState(csv_example_id);
+
     const headers = csv_example.length > 0 ? Object.keys(csv_example[0]) : [];
+
+    const handleExpansion = useCallback(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, []);
+
+    const handleCellClick = (cellText, cellId, header) => {
+        setCell(cellText);
+        setCurrentCellEdit([cellId, header]);
+    }
+
+    const handleSaveCell = () => {
+        if(currentCellEdit !== null){
+            const updatedData = csv_example_id.map((item) => {
+                if(item.id === currentCellEdit[0]){
+                    return { ...item, [currentCellEdit[1]]: editedData };
+                }
+                return item;
+            });
+            setData(updatedData);
+        }
+        setCell(null);
+        setCurrentCellEdit(null);
+    }
+
+    const storeChanges = (newText) => {
+        if(currentCellEdit[0] !== null){
+            setEditedData(newText);
+            
+        }
+    }
+
+    if(cell){
+        return(
+            <div id="edit-cell">
+                <textarea type="text" id="cell-selected" defaultValue={cell} ref={textareaRef}
+                onInput={handleExpansion} onChange={(e) => storeChanges(e.target.value)}/>
+                <ul id="button-list">
+                    <li><button className="action-button" onClick={() => setCell(null)}>Voltar para tabela</button></li>
+                    <li><button className="action-button" onClick={handleSaveCell}>Salvar</button></li>
+                </ul>
+            </div>
+        );
+    }
 
 
     return(
@@ -40,10 +94,12 @@ const Editor = (csv) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {csv_example.map((row, index) => (
-                            <tr key={index}>
+                        {data.map((row) => (
+                            <tr key={row.id}>
                                 {headers.map((header) => (
-                                    <td key={header}>{row[header]}</td>
+                                    <td onClick={() => handleCellClick(row[header], row.id, header)} key={header} className="csv-cell">
+                                        {row[header]}
+                                    </td>
                                 ))}
                             </tr>
                         ))}
