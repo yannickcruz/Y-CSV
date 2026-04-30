@@ -1,5 +1,6 @@
 import "../css/Editor.css"
 import { useCallback, useEffect, useRef, useState } from "react";
+import CellEdit from "./CellEdit";
 
 const Editor = (csv) => {
 
@@ -31,19 +32,14 @@ const Editor = (csv) => {
 
     const headers = csv_example.length > 0 ? Object.keys(csv_example[0]) : [];
 
-    const handleExpansion = useCallback(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        }
-    }, []);
+    
 
     const handleCellClick = (cellText, cellId, header) => {
         setCell(cellText);
         setCurrentCellEdit([cellId, header]);
     }
 
-    const handleSaveCell = () => {
+    const handleSaveCell = useEffect(() => {
         if(currentCellEdit !== null){
             const updatedData = csv_example_id.map((item) => {
                 if(item.id === currentCellEdit[0]){
@@ -55,25 +51,19 @@ const Editor = (csv) => {
         }
         setCell(null);
         setCurrentCellEdit(null);
-    }
+    }, [editedData]);
 
-    const storeChanges = (newText) => {
-        if(currentCellEdit[0] !== null){
-            setEditedData(newText);
-            
-        }
-    }
 
     if(cell){
         return(
-            <div id="edit-cell">
-                <textarea type="text" id="cell-selected" defaultValue={cell} ref={textareaRef}
-                onInput={handleExpansion} onChange={(e) => storeChanges(e.target.value)}/>
-                <ul id="button-list">
-                    <li><button className="action-button" onClick={() => setCell(null)}>Voltar para tabela</button></li>
-                    <li><button className="action-button" onClick={handleSaveCell}>Salvar</button></li>
-                </ul>
-            </div>
+            <CellEdit cellText={cell} cellId={currentCellEdit[0]} header={currentCellEdit[1]} onClose={(editedData) => {
+                if(editedData !== null){
+                    setEditedData(editedData);
+                } else{
+                    setCell(null);
+                    setCurrentCellEdit(null);
+                }
+            }} />
         );
     }
 

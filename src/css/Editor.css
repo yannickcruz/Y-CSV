@@ -68,7 +68,7 @@
     padding: 0.25rem;
 }
 
-#button-list{
+.button-list{
     display: flex;
     gap: 0.5rem;
 }
