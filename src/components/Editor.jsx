@@ -33,34 +33,47 @@ const Editor = (csv) => {
     const [addColumnPopup, setAddColumnPopup] = useState(false);
     const [headers, setHeaders] = useState(csv_example.length > 0 ? Object.keys(csv_example[0]) : []);
 
-    
+    useEffect(() => {
+        const storedData = localStorage.getItem('csvData');
+        const storedHeaders = localStorage.getItem('csvHeaders');
+        if (storedData) {
+            setData(JSON.parse(storedData));
+        }
+        if (storedHeaders) {
+            setHeaders(JSON.parse(storedHeaders));
+        }
+    }, []);
+
+    const saveToLocalStorage = (data, type) => {
+        if(type === 'data'){
+            localStorage.setItem('csvData', JSON.stringify(data));
+        }
+        if(type === 'headers'){
+            localStorage.setItem('csvHeaders', JSON.stringify(data));
+        }
+    }
+
 
     const handleCellClick = (cellText, cellId, header) => {
         setCell(cellText);
         setCurrentCellEdit([cellId, header]);
     }
 
-    const handleSaveCell = useEffect(() => {
-        if(currentCellEdit !== null){
-            const updatedData = csv_example_id.map((item) => {
-                if(item.id === currentCellEdit[0]){
-                    return { ...item, [currentCellEdit[1]]: editedData };
-                }
-                return item;
-            });
-            setData(updatedData);
-        }
-        setCell(null);
-        setCurrentCellEdit(null);
-
-    }, [editedData]);
-
-
+    
     if(cell !== null){
         return(
             <CellEdit cellText={cell} cellId={currentCellEdit[0]} header={currentCellEdit[1]} onClose={(editedData) => {
                 if(editedData !== null){
-                    setEditedData(editedData);
+                    const updatedData = data.map((item) => {
+                    if(item.id === currentCellEdit[0]){
+                        return { ...item, [currentCellEdit[1]]: editedData };
+                    }
+                    return item;
+                    });
+                    setData(updatedData);
+                    setCell(null);
+                    setCurrentCellEdit(null);
+                    saveToLocalStorage(updatedData, 'data');
                 } else{
                     setCell(null);
                     setCurrentCellEdit(null);
@@ -81,11 +94,11 @@ const Editor = (csv) => {
         const updatedData = data.map((item) => {
             return { ...item, [columnName]: '' };
         });
-        let prevHeaders = headers;
-        prevHeaders.push(columnName);
-        setHeaders(prevHeaders);
+        setHeaders([...headers, columnName]);
         setData(updatedData);
         closeAddColumnPopup();
+        saveToLocalStorage(updatedData, 'data');
+        saveToLocalStorage([...headers, columnName], 'headers');
     }
 
     const addRow = () => {
@@ -93,7 +106,8 @@ const Editor = (csv) => {
             acc[header] = '';
             return acc;
         }, {});
-        setData([...data, { ...newRow}]);
+        setData([...data, { ...newRow, id: data.length }]);
+        saveToLocalStorage([...data, { ...newRow, id: data.length }], 'data');
     }
 
 
