@@ -2,6 +2,8 @@ import "../css/Editor.css"
 import { useCallback, useEffect, useRef, useState } from "react";
 import CellEdit from "./CellEdit";
 import AddColumn from "./PopUps/AddColumn";
+import localforage from "localforage";
+import { useNavigate } from "react-router-dom";
 
 const Editor = (csv) => {
 
@@ -33,23 +35,40 @@ const Editor = (csv) => {
     const [addColumnPopup, setAddColumnPopup] = useState(false);
     const [headers, setHeaders] = useState(csv_example.length > 0 ? Object.keys(csv_example[0]) : []);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
-        const storedData = localStorage.getItem('csvData');
-        const storedHeaders = localStorage.getItem('csvHeaders');
-        if (storedData) {
-            setData(JSON.parse(storedData));
-        }
-        if (storedHeaders) {
-            setHeaders(JSON.parse(storedHeaders));
+        try{
+            const storedData = localforage.getItem('csvData').then((newData) => {
+                if(newData){
+                    if(typeof(newData) === 'string'){
+                        setData(JSON.parse(newData));
+                    } else {
+                        setData(newData);
+                    }
+                }
+            });
+            const storedHeaders = localforage.getItem('csvHeaders').then((newData) => {
+                if(newData){
+                    if(typeof(newData) === 'string'){
+                        setHeaders(JSON.parse(newData));
+                    } else {
+                        setHeaders(newData);
+                    }
+                }
+            });
+        } catch{
+            alert('Erro ao carregar dados do IndexedDB! Voltando para página inicial.');
+            navigate('/');
         }
     }, []);
 
-    const saveToLocalStorage = (data, type) => {
+    const saveToIndexedDB = (data, type) => {
         if(type === 'data'){
-            localStorage.setItem('csvData', JSON.stringify(data));
+            localforage.setItem('csvData', data);
         }
         if(type === 'headers'){
-            localStorage.setItem('csvHeaders', JSON.stringify(data));
+            localforage.setItem('csvHeaders', data);
         }
     }
 
@@ -73,7 +92,7 @@ const Editor = (csv) => {
                     setData(updatedData);
                     setCell(null);
                     setCurrentCellEdit(null);
-                    saveToLocalStorage(updatedData, 'data');
+                    saveToIndexedDB(updatedData, 'data');
                 } else{
                     setCell(null);
                     setCurrentCellEdit(null);
@@ -97,8 +116,8 @@ const Editor = (csv) => {
         setHeaders([...headers, columnName]);
         setData(updatedData);
         closeAddColumnPopup();
-        saveToLocalStorage(updatedData, 'data');
-        saveToLocalStorage([...headers, columnName], 'headers');
+        saveToIndexedDB(updatedData, 'data');
+        saveToIndexedDB([...headers, columnName], 'headers');
     }
 
     const addRow = () => {
@@ -107,7 +126,7 @@ const Editor = (csv) => {
             return acc;
         }, {});
         setData([...data, { ...newRow, id: data.length }]);
-        saveToLocalStorage([...data, { ...newRow, id: data.length }], 'data');
+        saveToIndexedDB([...data, { ...newRow, id: data.length }], 'data');
     }
 
 
