@@ -1,0 +1,37 @@
+.PopUp-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.39);
+    height: 100%;
+}
+
+#add-column-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 10px;
+    gap: 0.5rem;
+}
+
+#column-name{
+    padding: 0.2rem;
+}
+
+.editor-btn{
+    background-color: var(--bg-color);
+    color: var(--txt-color);
+}
+
+.editor-btn:hover{
+    background-color: var(--txt-color);
+    color: var(--bg-color);
+    border: 1px solid black;
+}

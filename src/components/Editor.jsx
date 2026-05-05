@@ -1,6 +1,7 @@
 import "../css/Editor.css"
 import { useCallback, useEffect, useRef, useState } from "react";
 import CellEdit from "./CellEdit";
+import AddColumn from "./PopUps/AddColumn";
 
 const Editor = (csv) => {
 
@@ -27,10 +28,10 @@ const Editor = (csv) => {
     const textareaRef = useRef(null);
     const [cell, setCell] = useState(null);
     const [currentCellEdit, setCurrentCellEdit] = useState(null);
-    const [editedData, setEditedData] = useState('');
     const [data, setData] = useState(csv_example_id);
-
-    const headers = csv_example.length > 0 ? Object.keys(csv_example[0]) : [];
+    const [editedData, setEditedData] = useState('');
+    const [addColumnPopup, setAddColumnPopup] = useState(false);
+    const [headers, setHeaders] = useState(csv_example.length > 0 ? Object.keys(csv_example[0]) : []);
 
     
 
@@ -51,10 +52,11 @@ const Editor = (csv) => {
         }
         setCell(null);
         setCurrentCellEdit(null);
+
     }, [editedData]);
 
 
-    if(cell){
+    if(cell !== null){
         return(
             <CellEdit cellText={cell} cellId={currentCellEdit[0]} header={currentCellEdit[1]} onClose={(editedData) => {
                 if(editedData !== null){
@@ -67,11 +69,44 @@ const Editor = (csv) => {
         );
     }
 
+    const openAddColumnPopup = () => {
+        setAddColumnPopup(true);
+    }
+
+    const closeAddColumnPopup = () => {
+        setAddColumnPopup(false);
+    }
+
+    const addNewColumn = (columnName) => {
+        const updatedData = data.map((item) => {
+            return { ...item, [columnName]: '' };
+        });
+        let prevHeaders = headers;
+        prevHeaders.push(columnName);
+        setHeaders(prevHeaders);
+        setData(updatedData);
+        closeAddColumnPopup();
+    }
+
+    const addRow = () => {
+        const newRow = headers.reduce((acc, header) => {
+            acc[header] = '';
+            return acc;
+        }, {});
+        setData([...data, { ...newRow}]);
+    }
+
 
     return(
         <section id="Editor">
             <header id="editor-header">
                 <h1 id="editor-title">Y-CSV</h1>
+                <div id="editor-buttons">
+                    <ul className="main-editor-btns">
+                        <li><button className="editor-btn" onClick={openAddColumnPopup}>Adicionar Coluna</button></li>
+                        <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
+                    </ul>
+                </div>
             </header>
 
             <div id="table-container">
@@ -97,6 +132,7 @@ const Editor = (csv) => {
                 </table>
                     
             </div>
+            <AddColumn isOpen={addColumnPopup} onClose={() => setAddColumnPopup(false)} onSubmit={addNewColumn} />
         </section>
     )
 }
