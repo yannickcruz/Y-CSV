@@ -22,6 +22,7 @@
     font-size: 2rem;
     color: var(--txt-color);
     padding: 1rem;
+    cursor: pointer;
 }
 
 #table-container{
@@ -111,4 +112,21 @@
     background-color: #000000;
     color: var(--txt-color);
     border: 1px solid var(--txt-color);
+}
+
+#csv-table th.delete-mode-header{
+    background-color: #ffa3a3;
+    cursor: pointer;
+}
+
+#csv-table th.delete-mode-header:hover{
+    background-color: #ff0000;
+}
+
+#csv-table td.delete-mode-body{
+    background-color: #ffbaba;
+}
+
+#csv-table td.delete-mode-body:hover{
+    background-color: #ff0000;
 }

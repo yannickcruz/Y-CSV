@@ -34,6 +34,7 @@ const Editor = (csv) => {
     const [editedData, setEditedData] = useState('');
     const [addColumnPopup, setAddColumnPopup] = useState(false);
     const [headers, setHeaders] = useState(csv_example.length > 0 ? Object.keys(csv_example[0]) : []);
+    const [isDeleteMode, setIsDeleteMode] = useState(false);
 
     const navigate = useNavigate();
 
@@ -74,6 +75,10 @@ const Editor = (csv) => {
 
 
     const handleCellClick = (cellText, cellId, header) => {
+        if(isDeleteMode){
+            deleteRow(cellId);
+            return;
+        }
         setCell(cellText);
         setCurrentCellEdit([cellId, header]);
     }
@@ -129,15 +134,38 @@ const Editor = (csv) => {
         saveToIndexedDB([...data, { ...newRow, id: data.length }], 'data');
     }
 
+    const deleteColumn = (columnName) => {
+        if(!isDeleteMode) return;
+        if(columnName){
+            const updatedData = data.map((item) => {
+            const { [columnName]: _, ...rest } = item;
+            return rest;
+            });
+            console.log(`Deleting column: ${columnName}`);
+            setHeaders(headers.filter(header => header !== columnName));
+            setData(updatedData);
+            saveToIndexedDB(updatedData, 'data');
+            saveToIndexedDB(headers.filter(header => header !== columnName), 'headers');
+        }
+    }
+
+    const deleteRow = (rowId) => {
+        if(!isDeleteMode) return;
+        const updatedData = data.filter((item) => item.id !== rowId);
+        setData(updatedData);
+        saveToIndexedDB(updatedData, 'data');
+    }
+
 
     return(
         <section id="Editor">
             <header id="editor-header">
-                <h1 id="editor-title">Y-CSV</h1>
+                <h1 id="editor-title" onClick={() => {navigate('/')}}>Y-CSV</h1>
                 <div id="editor-buttons">
                     <ul className="main-editor-btns">
                         <li><button className="editor-btn" onClick={openAddColumnPopup}>Adicionar Coluna</button></li>
                         <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
+                        <li><button className="editor-btn" onClick={() => setIsDeleteMode(!isDeleteMode)}>Remover Linhas/Colunas</button></li>
                     </ul>
                 </div>
             </header>
@@ -147,7 +175,7 @@ const Editor = (csv) => {
                     <thead>
                         <tr>
                             {headers.map((header) => (
-                                <th key={header}>{header}</th>
+                                <th className={`${isDeleteMode ? 'delete-mode-header' : ''}`} onClick={() => deleteColumn(header)} key={header}>{header}</th>
                             ))}
                         </tr>
                     </thead>
@@ -155,7 +183,7 @@ const Editor = (csv) => {
                         {data.map((row) => (
                             <tr key={row.id}>
                                 {headers.map((header) => (
-                                    <td onClick={() => handleCellClick(row[header], row.id, header)} key={header} className="csv-cell">
+                                    <td className={`csv-cell ${isDeleteMode ? 'delete-mode-body' : ''}`} onClick={() => handleCellClick(row[header], row.id, header)} key={header}>
                                         {row[header]}
                                     </td>
                                 ))}
