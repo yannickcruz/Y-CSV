@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
+import {CircleX} from 'lucide-react';
 
-const UploadFile = () => {
+const UploadFile = ({isClose, submit}) => {
 
     const fileInputRef = useRef(null);
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
+    
 
     const handleDragOver = (e) => {
         e.preventDefault();
@@ -41,12 +43,17 @@ const UploadFile = () => {
         if(!file) return;
         const formData = new FormData();
         formData.append('file', file);
-        
+        submit(formData);
     }
 
     return(
         <div id="upload-file" className="pop-up">
-            <h2>Upload File</h2>
+            <div className="pop-up-header">
+                <h2>Upload File</h2>
+                <button className="close-btn" onClick={() => isClose(false)}>
+                    <CircleX />
+                </button>
+            </div>
             <form action="/upload" className="upload-file-form" method="post" encType="multipart/form-data">
                 <div id="drop-area" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={isDragging ? 'dragging' : ''}>
 
@@ -58,3 +65,5 @@ const UploadFile = () => {
         </div>
     )
 }
+
+export default UploadFile;
