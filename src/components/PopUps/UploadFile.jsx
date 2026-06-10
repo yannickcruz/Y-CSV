@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {CircleX} from 'lucide-react';
+import "../../css/UploadFile.css"
 
 const UploadFile = ({isClose, submit}) => {
 
@@ -48,20 +49,25 @@ const UploadFile = ({isClose, submit}) => {
 
     return(
         <div id="upload-file" className="pop-up">
-            <div className="pop-up-header">
-                <h2>Upload File</h2>
-                <button className="close-btn" onClick={() => isClose(false)}>
-                    <CircleX />
-                </button>
-            </div>
-            <form action="/upload" className="upload-file-form" method="post" encType="multipart/form-data">
-                <div id="drop-area" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={isDragging ? 'dragging' : ''}>
-
+            <div id="upload-container">
+                <div className="pop-up-header">
+                    <h2>Enviar Arquivo CSV</h2>
                 </div>
-                <input type="file" accept=".csv" name="file" />
-                {file ? <p>Arquivo selecionado: {file.name}</p> : <p>Arraste e solte um arquivo CSV aqui ou clique para selecionar</p>}
-                <button type="submit">Upload</button>
-            </form>
+                <form action="/upload" className="upload-file-form" method="post" encType="multipart/form-data">
+                    <div id="drop-area" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={isDragging ? 'dragging' : ''}>
+                        {file ? <p>Arquivo selecionado: {file.name}</p> : <p>Arraste e solte um arquivo CSV aqui</p>}
+                    </div>
+                    <input type="file" accept=".csv" name="file" id="file-input" onChange={handleFileSelect} />
+                    <div id="buttons-container">
+                        <button type="submit" className="btn-style">
+                            Upload
+                        </button>
+                        <button id="close-btn" className="btn-style" onClick={() => isClose(false)}>
+                            <CircleX id="close-icon" /> Fechar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }
