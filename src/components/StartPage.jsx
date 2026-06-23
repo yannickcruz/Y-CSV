@@ -2,9 +2,10 @@ import "../css/StartPage.css"
 import { NavLink } from "react-router-dom"
 import { useState, useCallback } from "react"
 
-const StartPage = ({openUploader}) => {
+const StartPage = ({openUploader, loadStandardCSV}) => {
 
     const handleOpen = () => {
+        loadStandardCSV();
         openUploader(true);
     }
 

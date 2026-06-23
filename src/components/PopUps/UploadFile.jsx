@@ -44,6 +44,8 @@ const UploadFile = ({isClose, submit}) => {
         if(!file) return;
         const formData = new FormData();
         formData.append('file', file);
+        console.log(formData);
+        isClose(false);
         submit(formData);
     }
 
@@ -53,7 +55,7 @@ const UploadFile = ({isClose, submit}) => {
                 <div className="pop-up-header">
                     <h2>Enviar Arquivo CSV</h2>
                 </div>
-                <form action="/upload" className="upload-file-form" method="post" encType="multipart/form-data">
+                <form className="upload-file-form" onSubmit={handleSubmit}>
                     <div id="drop-area" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={isDragging ? 'dragging' : ''}>
                         {file ? <p>Arquivo selecionado: {file.name}</p> : <p>Arraste e solte um arquivo CSV aqui</p>}
                     </div>
