@@ -4,6 +4,7 @@ import StartPage from './components/StartPage'
 import Editor from './components/Editor'
 import {useState, useCallback} from 'react'
 import UploadFile from './components/PopUps/UploadFile'
+import localforage from "localforage";
 
 
 function App() {
@@ -32,6 +33,34 @@ function App() {
     }
   }
 
+  const saveToLocalForage = useCallback(async (headers, chunks) => {
+    let totalItems = 0;
+    const metadata = await localforage.getItem('csvMetadata');
+
+    for(let i = 0; i < chunks.length; i++){
+      totalItems += chunks[i].rows.length;
+    }
+
+    if(metadata?.chunkLength){
+      await Promise.all(
+        Array.from({length: metadata.chunkLength}, (_, i) => {
+          return localforage.removeItem(`csvChunk_${i}`);
+        })
+      );
+    }
+
+    await Promise.all([
+      localforage.setItem('headers', headers),
+      localforage.setItem('csvMetadata', {
+        chunkLength: chunks.length,
+        totalItems: totalItems
+      }),
+      ...chunks.map((chunk, index) => {
+        return localforage.setItem(`csvChunk_${index}`, chunk);
+      })
+    ]);
+  }, []);
+
   const uploadCSV = useCallback(async (formData) => {
     try{
       const response = await fetch(`${url}/upload`, {
@@ -39,13 +68,22 @@ function App() {
         body: formData,
       });
       const result = await response.json();
+      //console.log(result.chunks.length);
       if(result){
+        const headers = result.chunks[0].headers;
+        const chunks = result.chunks.map((chunk) => ({
+          rows: chunk.rows,
+          chunkIndex: chunk.chunk_index
+        }));
+        await saveToLocalForage(headers, chunks);
         navigate('/editor');
       }
     } catch (error) {
       console.error('Error uploading CSV:', error);
     }
   });
+
+
 
 
   return(
