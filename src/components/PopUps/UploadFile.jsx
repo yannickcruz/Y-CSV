@@ -45,6 +45,10 @@ const UploadFile = ({isClose, submit}) => {
         const formData = new FormData();
         formData.append('file', file);
         console.log(formData);
+        setFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ""; 
+        }
         isClose(false);
         submit(formData);
     }

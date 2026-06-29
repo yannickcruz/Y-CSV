@@ -33,36 +33,67 @@ const Editor = (csv) => {
     const [data, setData] = useState(csv_example_id);
     const [editedData, setEditedData] = useState('');
     const [addColumnPopup, setAddColumnPopup] = useState(false);
-    const [headers, setHeaders] = useState(csv_example.length > 0 ? Object.keys(csv_example[0]) : []);
+    const [headers, setHeaders] = useState(null);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [chunkCount, setChunkCount] = useState(0);
+    const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        try{
-            const storedData = localforage.getItem('csvData').then((newData) => {
-                if(newData){
-                    if(typeof(newData) === 'string'){
-                        setData(JSON.parse(newData));
-                    } else {
-                        setData(newData);
+        const getData = async () => {
+            try{
+                const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
+                    if(metadata && metadata.chunkLength){
+                        return metadata.chunkLength;
                     }
+                })
+                setChunkCount(chunkCount);
+
+                const headers = await localforage.getItem('headers');
+                if(headers){
+                    setHeaders(headers);
                 }
-            });
-            const storedHeaders = localforage.getItem('csvHeaders').then((newData) => {
-                if(newData){
-                    if(typeof(newData) === 'string'){
-                        setHeaders(JSON.parse(newData));
-                    } else {
-                        setHeaders(newData);
-                    }
+
+                const currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                if(currentChunk){
+                    const chunkWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
+                    setData(chunkWithId);
                 }
-            });
-        } catch{
-            alert('Erro ao carregar dados do IndexedDB! Voltando para página inicial.');
-            navigate('/');
+                setIsLoading(false);
+                
+            } catch (error) {
+                console.error('Error retrieving chunk count from IndexedDB:', error);
+                alert('Erro ao carregar dados do IndexedDB! Voltando para página inicial.');
+                navigate('/');
+            }
         }
+        getData();
     }, []);
+
+    useEffect(() => {
+        const getCurrentChunk = async () => {
+            try{
+                const currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                if(currentChunk){
+                    const chunkWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
+                    setData(chunkWithId);
+                }
+            } catch (error) {
+                console.error('Error retrieving current chunk from IndexedDB:', error);
+            }
+        }
+        getCurrentChunk();
+    }, [currentChunkIndex]);
+
+    if(isLoading){
+        return(
+            <div className="loading-screen">
+                <p>Carregando dados...</p>
+            </div>
+        );
+    }
 
     const saveToIndexedDB = (data, type) => {
         if(type === 'data'){
@@ -166,6 +197,19 @@ const Editor = (csv) => {
                         <li><button className="editor-btn" onClick={openAddColumnPopup}>Adicionar Coluna</button></li>
                         <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
                         <li><button className="editor-btn" onClick={() => setIsDeleteMode(!isDeleteMode)}>Remover Linhas/Colunas</button></li>
+                        <li id="page-slider">
+                            <p id="page-display">Página {currentChunkIndex + 1} de {chunkCount}</p>
+                            <select id="page-select" value={currentChunkIndex} onChange={(e) => {
+                                const newIndex = parseInt(e.target.value);
+                                setCurrentChunkIndex(newIndex);
+                            }}>
+                                {Array.from({ length: chunkCount }, (_, i) => (
+                                    <option key={i} value={i}>
+                                        Página {i + 1}
+                                    </option>
+                                ))}
+                            </select>
+                        </li>
                     </ul>
                 </div>
             </header>

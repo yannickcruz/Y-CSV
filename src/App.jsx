@@ -34,19 +34,19 @@ function App() {
   }
 
   const saveToLocalForage = useCallback(async (headers, chunks) => {
+  try {
     let totalItems = 0;
-    const metadata = await localforage.getItem('csvMetadata');
-
     for(let i = 0; i < chunks.length; i++){
       totalItems += chunks[i].rows.length;
     }
 
-    if(metadata?.chunkLength){
-      await Promise.all(
-        Array.from({length: metadata.chunkLength}, (_, i) => {
-          return localforage.removeItem(`csvChunk_${i}`);
-        })
+    const metadata = await localforage.getItem('csvMetadata');
+
+    if (metadata?.chunkLength) {
+      const deletePromises = Array.from({ length: metadata.chunkLength }, (_, i) => 
+        localforage.removeItem(`csvChunk_${i}`)
       );
+      await Promise.all(deletePromises); 
     }
 
     await Promise.all([
@@ -59,7 +59,11 @@ function App() {
         return localforage.setItem(`csvChunk_${index}`, chunk);
       })
     ]);
-  }, []);
+
+  } catch (error) {
+    console.error("Erro ao salvar no localForage:", error);
+  }
+}, []);
 
   const uploadCSV = useCallback(async (formData) => {
     try{
@@ -76,12 +80,13 @@ function App() {
           chunkIndex: chunk.chunk_index
         }));
         await saveToLocalForage(headers, chunks);
+        console.log(result);
         navigate('/editor');
       }
     } catch (error) {
       console.error('Error uploading CSV:', error);
     }
-  });
+  }, [saveToLocalForage, navigate]);
 
 
 
