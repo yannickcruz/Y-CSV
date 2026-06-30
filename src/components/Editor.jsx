@@ -58,8 +58,8 @@ const Editor = (csv) => {
 
                 let currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
                 if(currentChunk){
-                    const chunkWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
-                    currentChunk.rows = chunkWithId;
+                    const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
+                    currentChunk.rows = rowsWithId;
                     setData(currentChunk);
                 }
                 setIsLoading(false);
@@ -76,10 +76,11 @@ const Editor = (csv) => {
     useEffect(() => {
         const getCurrentChunk = async () => {
             try{
-                const currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                let currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
                 if(currentChunk){
-                    const chunkWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
-                    setData(chunkWithId);
+                    const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
+                    currentChunk.rows = rowsWithId
+                    setData(currentChunk);
                 }
             } catch (error) {
                 console.error('Error retrieving current chunk from IndexedDB:', error);
