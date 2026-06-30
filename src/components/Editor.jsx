@@ -30,7 +30,7 @@ const Editor = (csv) => {
     const textareaRef = useRef(null);
     const [cell, setCell] = useState(null);
     const [currentCellEdit, setCurrentCellEdit] = useState(null);
-    const [data, setData] = useState(csv_example_id);
+    const [data, setData] = useState(null);
     const [editedData, setEditedData] = useState('');
     const [addColumnPopup, setAddColumnPopup] = useState(false);
     const [headers, setHeaders] = useState(null);
@@ -56,10 +56,11 @@ const Editor = (csv) => {
                     setHeaders(headers);
                 }
 
-                const currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                let currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
                 if(currentChunk){
                     const chunkWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
-                    setData(chunkWithId);
+                    currentChunk.rows = chunkWithId;
+                    setData(currentChunk);
                 }
                 setIsLoading(false);
                 
@@ -97,10 +98,12 @@ const Editor = (csv) => {
 
     const saveToIndexedDB = (data, type) => {
         if(type === 'data'){
-            localforage.setItem('csvData', data);
+            if(data.chunkIndex === currentChunkIndex){
+                localforage.setItem(`csvChunk_${currentChunkIndex}`, data);
+            }
         }
         if(type === 'headers'){
-            localforage.setItem('csvHeaders', data);
+            localforage.setItem('headers', data);
         }
     }
 
@@ -119,16 +122,18 @@ const Editor = (csv) => {
         return(
             <CellEdit cellText={cell} cellId={currentCellEdit[0]} header={currentCellEdit[1]} onClose={(editedData) => {
                 if(editedData !== null){
-                    const updatedData = data.map((item) => {
+                    const updatedData = data.rows.map((item) => {
                     if(item.id === currentCellEdit[0]){
                         return { ...item, [currentCellEdit[1]]: editedData };
                     }
                     return item;
                     });
-                    setData(updatedData);
+                    let chunk = data;
+                    chunk.rows = updatedData;
+                    setData(chunk);
                     setCell(null);
                     setCurrentCellEdit(null);
-                    saveToIndexedDB(updatedData, 'data');
+                    saveToIndexedDB(chunk, 'data');
                 } else{
                     setCell(null);
                     setCurrentCellEdit(null);
@@ -224,7 +229,7 @@ const Editor = (csv) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((row) => (
+                        {data.rows.map((row) => (
                             <tr key={row.id}>
                                 {headers.map((header) => (
                                     <td className={`csv-cell ${isDeleteMode ? 'delete-mode-body' : ''}`} onClick={() => handleCellClick(row[header], row.id, header)} key={header}>
