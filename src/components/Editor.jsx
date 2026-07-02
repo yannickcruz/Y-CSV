@@ -171,26 +171,34 @@ const Editor = (csv) => {
         saveToIndexedDB([...data, { ...newRow, id: data.length }], 'data');
     }
 
+    const updateChunk = (newRows, newHeaders) => {
+        setData(prev => ({
+            ...prev,
+            ...(newHeaders && { headers: newHeaders }),
+            ...(newRows && { rows: newRows })
+        }));
+        saveToIndexedDB(data, 'data');
+    }
+
     const deleteColumn = (columnName) => {
         if(!isDeleteMode) return;
         if(columnName){
-            const updatedData = data.map((item) => {
+            const updatedData = data.rows.map((item) => {
             const { [columnName]: _, ...rest } = item;
             return rest;
             });
-            console.log(`Deleting column: ${columnName}`);
-            setHeaders(headers.filter(header => header !== columnName));
-            setData(updatedData);
-            saveToIndexedDB(updatedData, 'data');
-            saveToIndexedDB(headers.filter(header => header !== columnName), 'headers');
+            const newHeaders = headers.filter(header => header !== columnName);
+            updateChunk(updatedData, newHeaders);
+
+            setHeaders(newHeaders);
+            saveToIndexedDB(newHeaders, 'headers');
         }
     }
 
     const deleteRow = (rowId) => {
         if(!isDeleteMode) return;
-        const updatedData = data.filter((item) => item.id !== rowId);
-        setData(updatedData);
-        saveToIndexedDB(updatedData, 'data');
+        const updatedData = data.rows.filter((item) => item.id !== rowId);
+        updateChunk(updatedData);
     }
 
 

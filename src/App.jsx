@@ -76,6 +76,7 @@ function App() {
       if(result){
         const headers = result.chunks[0].headers;
         const chunks = result.chunks.map((chunk) => ({
+          headers: headers,
           rows: chunk.rows,
           chunkIndex: chunk.chunk_index
         }));
