@@ -44,7 +44,7 @@
     padding: 0.5rem;
     text-align: left;
     background-color: var(--txt-color);
-    
+    min-height: 0.5rem;
 }
 
 #csv-table .csv-cell:hover{
