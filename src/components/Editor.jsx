@@ -7,45 +7,43 @@ import { useNavigate } from "react-router-dom";
 
 const Editor = (csv) => {
 
-    // Exemplo de JSON de CSV
-    const csv_example = [
-        {
-            Filename: "image_filename.jpg",
-            Title: "A short description of what the asset represents",
-            Keywords: "Keyword1, Keyword2, Keyword3, Keyword4, Keyword5",
-            Category: 3,
-            Releases: "Haleeq Whitten, Ludovic Hillion, Morgan Greentstreet, Christine Manore"
-        },
-        {
-            Filename: "footage_filename.mov",
-            Title: "Up to 200 characters",
-            Keywords: "Most important keywords first. Max 49 keywords.",
-            Category: "Enter the number matching the category in the upload-CSV dialog",
-            Releases: "The names you gave to the releases when you uploaded them on Adobe Stock"
-        }
-    ];
-
-    const csv_example_id = csv_example.map((item, index) => ({ id: index, ...item }));
-
     const textareaRef = useRef(null);
+    const skipFetch = useRef(false);
+
     const [cell, setCell] = useState(null);
     const [data, setData] = useState(null);
     const [addColumnPopup, setAddColumnPopup] = useState(false);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [chunkCount, setChunkCount] = useState(0);
-    const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
+    const [chunkState, setchunkState] = useState({
+        chunkCount: 0,
+        currentChunkIndex: 0
+    });
     const [lastChunk, setLastChunk] = useState(null);
 
     const navigate = useNavigate();
 
-    const updateChunk = (newRows, newHeaders) => {
-        setData(prev => ({
-            ...prev,
-            ...(newHeaders && { headers: newHeaders }),
-            ...(newRows && { rows: newRows })
-        }));
-        saveToIndexedDB(data, 'data');
+    const updateChunk = (newRows, newHeaders, isLast) => {
+        setData(prev => {
+            const updated = {
+                ...prev,
+                ...(newHeaders && { headers: newHeaders }),
+                ...(newRows && { rows: newRows })
+            };
+            saveToIndexedDB(updated, 'data');
+            return updated;
+        });
+
+        if(isLast){
+            setLastChunk(prev => {
+                const updated = {
+                    ...prev,
+                    ...(newHeaders && { headers: newHeaders }),
+                    ...(newRows && { rows: newRows })
+                }
+                return updated;
+            });
+        }
     }
 
     useEffect(() => {
@@ -56,14 +54,23 @@ const Editor = (csv) => {
                         return metadata.chunkLength;
                     }
                 })
-                setChunkCount(chunkCount);
+                setchunkState(prev => ({...prev, chunkCount: chunkCount}));
+                const currentIndex = chunkState.currentChunkIndex;
+                const lastIndex = chunkCount - 1;
+                
 
-                let currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                let currentChunk = await localforage.getItem(`csvChunk_${currentIndex}`);
                 if(currentChunk){
                     const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
                     currentChunk.rows = rowsWithId;
                     setData(currentChunk);
                 }
+
+                const l_chunk = await localforage.getItem(`csvChunk_${lastIndex}`);
+                if(l_chunk){
+                    setLastChunk(l_chunk);
+                }
+
                 setIsLoading(false);
                 
             } catch (error) {
@@ -76,9 +83,13 @@ const Editor = (csv) => {
     }, []);
 
     useEffect(() => {
+        if(skipFetch.current){
+            skipFetch.current = false;
+            return;
+        }
         const getCurrentChunk = async () => {
             try{
-                let currentChunk = await localforage.getItem(`csvChunk_${currentChunkIndex}`);
+                let currentChunk = await localforage.getItem(`csvChunk_${chunkState.currentChunkIndex}`);
                 if(currentChunk){
                     const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
                     currentChunk.rows = rowsWithId
@@ -89,7 +100,7 @@ const Editor = (csv) => {
             }
         }
         getCurrentChunk();
-    }, [currentChunkIndex]);
+    }, [chunkState.currentChunkIndex]);
 
     if(isLoading){
         return(
@@ -99,10 +110,12 @@ const Editor = (csv) => {
         );
     }
 
-    const saveToIndexedDB = (data, type) => {
+    const saveToIndexedDB = (data, type, explicitIndex) => {
+        const currentIndex = explicitIndex ?? chunkState.currentChunkIndex;
+
         if(type === 'data'){
-            if(data.chunkIndex === currentChunkIndex){
-                localforage.setItem(`csvChunk_${currentChunkIndex}`, data);
+            if(data.chunkIndex === currentIndex){
+                localforage.setItem(`csvChunk_${currentIndex}`, data);
             }
         }
         if(type === 'headers'){
@@ -166,20 +179,28 @@ const Editor = (csv) => {
         saveToIndexedDB([...headers, columnName], 'headers');
     }
 
-    const addRow = () => {
+    const addRow = async () => {
         const newRow = data.headers.reduce((acc, header) => {
             acc[header] = '';
             return acc;
         }, {});
-        const rows = data.rows;
-        if(data.rows.length === 100){
 
+        if(data.rows.length >= 100 && lastChunk.rows.length < 100){
+            const lastIndex = chunkState.chunkCount - 1;
 
-            //Fazer lógica de pular para o último chunk
+            const newData = [...lastChunk.rows, {...newRow, id: lastChunk.rows.length}];
+            const updatedLastChunk = { ...lastChunk, rows: newData };
 
+            await saveToIndexedDB(updatedLastChunk, 'data', lastIndex);
+            skipFetch.current = true;
 
+            setData(updatedLastChunk);
+            setLastChunk(updatedLastChunk);
+            setchunkState(prev => ({...prev, currentChunkIndex: lastIndex}));
+            return;
         }
-        const newData = [...rows, {...newRow, id: data.rows.length}];
+
+        const newData = [...data.rows, {...newRow, id: data.rows.length}];
         updateChunk(newData);
     }
 
@@ -198,8 +219,13 @@ const Editor = (csv) => {
 
     const deleteRow = (rowId) => {
         if(!isDeleteMode) return;
-        const updatedData = data.rows.filter((item) => item.id !== rowId);
-        updateChunk(updatedData);
+        let isLast = null;
+        if(chunkState.currentChunkIndex === chunkState.chunkCount - 1){
+            isLast = true;
+        }
+        const filtered = data.rows.filter((item) => item.id !== rowId);
+        const reindexed = filtered.map((item, index) => ({ ...item, id: index })); 
+        updateChunk(reindexed, null, isLast);
     }
 
 
@@ -213,12 +239,12 @@ const Editor = (csv) => {
                         <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
                         <li><button className="editor-btn" onClick={() => setIsDeleteMode(!isDeleteMode)}>Remover Linhas/Colunas</button></li>
                         <li id="page-slider">
-                            <p id="page-display">Página {currentChunkIndex + 1} de {chunkCount}</p>
-                            <select id="page-select" value={currentChunkIndex} onChange={(e) => {
+                            <p id="page-display">Página {chunkState.currentChunkIndex + 1} de {chunkState.chunkCount}</p>
+                            <select id="page-select" value={chunkState.currentChunkIndex} onChange={(e) => {
                                 const newIndex = parseInt(e.target.value);
-                                setCurrentChunkIndex(newIndex);
+                                setchunkState(prev => ({...prev, currentChunkIndex: newIndex}));
                             }}>
-                                {Array.from({ length: chunkCount }, (_, i) => (
+                                {Array.from({ length: chunkState.chunkCount }, (_, i) => (
                                     <option key={i} value={i}>
                                         Página {i + 1}
                                     </option>

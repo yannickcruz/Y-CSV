@@ -23,9 +23,6 @@ function App() {
       }
 
       const data = await response.json();
-      // Process the data as needed
-      console.log(response);
-      console.log(data);
 
 
     } catch (error) {
@@ -72,7 +69,6 @@ function App() {
         body: formData,
       });
       const result = await response.json();
-      //console.log(result.chunks.length);
       if(result){
         const headers = result.chunks[0].headers;
         const chunks = result.chunks.map((chunk) => ({
@@ -81,7 +77,6 @@ function App() {
           chunkIndex: chunk.chunk_index
         }));
         await saveToLocalForage(headers, chunks);
-        console.log(result);
         navigate('/editor');
       }
     } catch (error) {
