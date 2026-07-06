@@ -130,3 +130,7 @@
 #csv-table td.delete-mode-body:hover{
     background-color: #ff0000;
 }
+
+#page-display{
+    color: var(--txt-color);
+}

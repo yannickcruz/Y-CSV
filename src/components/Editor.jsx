@@ -35,14 +35,17 @@ const Editor = (csv) => {
         });
 
         if(isLast){
-            setLastChunk(prev => {
-                const updated = {
-                    ...prev,
-                    ...(newHeaders && { headers: newHeaders }),
-                    ...(newRows && { rows: newRows })
-                }
-                return updated;
-            });
+            if(isLast === chunkState.currentChunkIndex){
+                console.log('LastChunk sendo atualizado');
+                setLastChunk(prev => {
+                    const updated = {
+                        ...prev,
+                        ...(newHeaders && { headers: newHeaders }),
+                        ...(newRows && { rows: newRows })
+                    }
+                    return updated;
+                });
+            }
         }
     }
 
@@ -185,6 +188,13 @@ const Editor = (csv) => {
             return acc;
         }, {});
 
+        const L_Chunk = await localforage.getItem(`csvChunk_${chunkState.chunkCount - 1}`);
+
+        let lastIndexUpdate = null;
+        if(data.chunkIndex === lastChunk.chunkIndex){
+            lastIndexUpdate = lastChunk.chunkIndex;
+        }
+
         if(data.rows.length >= 100 && lastChunk.rows.length < 100){
             const lastIndex = chunkState.chunkCount - 1;
 
@@ -198,10 +208,36 @@ const Editor = (csv) => {
             setLastChunk(updatedLastChunk);
             setchunkState(prev => ({...prev, currentChunkIndex: lastIndex}));
             return;
+        } 
+        
+        if(data.rows.length >= 100 && L_Chunk.rows.length === 100){
+            skipFetch.current = true;
+
+            const newLastIndex = chunkState.chunkCount;
+            const newHeaders = data.headers;
+            const newChunkRows = [{id: 0, ...newRow}];
+
+            const newChunk = {
+                headers: newHeaders,
+                rows: newChunkRows,
+                chunkIndex: newLastIndex
+            };
+
+            const newMetadata = await localforage.getItem('csvMetadata').then((metadata) => {
+                return {...metadata, chunkLength: newLastIndex + 1}
+            });
+            await localforage.setItem('csvMetadata', newMetadata);
+
+            await setData(newChunk);
+            setLastChunk(newChunk);
+
+            await localforage.setItem(`csvChunk_${chunkState.chunkCount}`, newChunk);
+            setchunkState(prev => ({chunkCount: newLastIndex + 1, currentChunkIndex: newLastIndex}) );
+            return;
         }
 
         const newData = [...data.rows, {...newRow, id: data.rows.length}];
-        updateChunk(newData);
+        updateChunk(newData, null, lastIndexUpdate);
     }
 
     const deleteColumn = (columnName) => {
@@ -225,7 +261,7 @@ const Editor = (csv) => {
         }
         const filtered = data.rows.filter((item) => item.id !== rowId);
         const reindexed = filtered.map((item, index) => ({ ...item, id: index })); 
-        updateChunk(reindexed, null, isLast);
+        updateChunk(reindexed, null, lastChunk.chunkIndex);
     }
 
 
