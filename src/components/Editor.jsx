@@ -154,13 +154,27 @@ const Editor = (csv) => {
         setAddColumnPopup(false);
     }
 
-    const addNewColumn = (columnName) => {
-        const updatedData = data.rows.map((item) => {
-            return { ...item, [columnName]: '' };
-        });
+    const addNewColumn = async (columnName) => {
+
+        for(let i = 0; i < chunkState.chunkCount; i++){
+            const chunkToUpdate = await localforage.getItem(`csvChunk_${i}`);
+
+            const updatedRows = chunkToUpdate.rows.map((item) => {
+                return { ...item, [columnName]: '' };
+            });
+
+            const updatedHeaders = [...chunkToUpdate.headers, columnName];
+            chunkToUpdate.rows = updatedRows;
+            chunkToUpdate.headers = updatedHeaders;
+
+            await localforage.setItem(`csvChunk_${i}`, chunkToUpdate);
+            if(chunkToUpdate.chunkIndex === data.chunkIndex){
+                updateChunk(updatedRows, updatedHeaders);
+            }
+        }
+
         const headers = data.headers;
         const newHeaders = [...headers, columnName];
-        updateChunk(updatedData, newHeaders);
         closeAddColumnPopup();
         saveToIndexedDB([...headers, columnName], 'headers');
     }
