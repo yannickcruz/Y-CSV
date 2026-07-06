@@ -19,6 +19,7 @@ const Editor = (csv) => {
         chunkCount: 0,
         currentChunkIndex: 0
     });
+    const [editedHeaders, setEditedHeaders] = useState(null);
 
     const navigate = useNavigate();
 
@@ -72,6 +73,10 @@ const Editor = (csv) => {
             try{
                 let currentChunk = await localforage.getItem(`csvChunk_${chunkState.currentChunkIndex}`);
                 if(currentChunk){
+                    if(editedHeaders){
+                        currentChunk.headers = editedHeaders;
+                        saveToIndexedDB(currentChunk, 'data');
+                    }
                     const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
                     currentChunk.rows = rowsWithId
                     setData(currentChunk);
@@ -216,17 +221,29 @@ const Editor = (csv) => {
         updateChunk(newData, null, lastIndexUpdate);
     }
 
-    const deleteColumn = (columnName) => {
-        if(!isDeleteMode) return;
-        if(columnName){
-            const updatedData = data.rows.map((item) => {
-            const { [columnName]: _, ...rest } = item;
-            return rest;
+    const deleteColumn = async (columnName) => {
+        if(!isDeleteMode || !columnName) return;
+
+        for(let i = 0; i < chunkState.chunkCount; i++){
+            const chunkToUpdate = await localforage.getItem(`csvChunk_${i}`);
+
+            const updatedRows = chunkToUpdate.rows.map((item) => {
+                const { [columnName]: _, ...rest } = item;
+                return rest;
             });
-            const newHeaders = data.headers.filter(header => header !== columnName);
-            updateChunk(updatedData, newHeaders);
-            saveToIndexedDB(newHeaders, 'headers');
+            const updatedHeaders = chunkToUpdate.headers.filter(h => h !== columnName);
+
+            chunkToUpdate.rows = updatedRows;
+            chunkToUpdate.headers = updatedHeaders;
+
+            await localforage.setItem(`csvChunk_${i}`, chunkToUpdate);
+
+            if(chunkToUpdate.chunkIndex === data.chunkIndex){
+                updateChunk(chunkToUpdate.rows, chunkToUpdate.headers);
+            }
         }
+
+        saveToIndexedDB(data.headers.filter(h => h !== columnName), 'headers');
     }
 
     const deleteRow = (rowId) => {
