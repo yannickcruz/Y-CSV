@@ -19,11 +19,10 @@ const Editor = (csv) => {
         chunkCount: 0,
         currentChunkIndex: 0
     });
-    const [lastChunk, setLastChunk] = useState(null);
 
     const navigate = useNavigate();
 
-    const updateChunk = (newRows, newHeaders, isLast) => {
+    const updateChunk = (newRows, newHeaders) => {
         setData(prev => {
             const updated = {
                 ...prev,
@@ -33,20 +32,6 @@ const Editor = (csv) => {
             saveToIndexedDB(updated, 'data');
             return updated;
         });
-
-        if(isLast){
-            if(isLast === chunkState.currentChunkIndex){
-                console.log('LastChunk sendo atualizado');
-                setLastChunk(prev => {
-                    const updated = {
-                        ...prev,
-                        ...(newHeaders && { headers: newHeaders }),
-                        ...(newRows && { rows: newRows })
-                    }
-                    return updated;
-                });
-            }
-        }
     }
 
     useEffect(() => {
@@ -59,19 +44,12 @@ const Editor = (csv) => {
                 })
                 setchunkState(prev => ({...prev, chunkCount: chunkCount}));
                 const currentIndex = chunkState.currentChunkIndex;
-                const lastIndex = chunkCount - 1;
                 
-
                 let currentChunk = await localforage.getItem(`csvChunk_${currentIndex}`);
                 if(currentChunk){
                     const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
                     currentChunk.rows = rowsWithId;
                     setData(currentChunk);
-                }
-
-                const l_chunk = await localforage.getItem(`csvChunk_${lastIndex}`);
-                if(l_chunk){
-                    setLastChunk(l_chunk);
                 }
 
                 setIsLoading(false);
@@ -191,21 +169,20 @@ const Editor = (csv) => {
         const L_Chunk = await localforage.getItem(`csvChunk_${chunkState.chunkCount - 1}`);
 
         let lastIndexUpdate = null;
-        if(data.chunkIndex === lastChunk.chunkIndex){
-            lastIndexUpdate = lastChunk.chunkIndex;
+        if(data.chunkIndex === L_Chunk.chunkIndex){
+            lastIndexUpdate = L_Chunk.chunkIndex;
         }
 
-        if(data.rows.length >= 100 && lastChunk.rows.length < 100){
+        if(data.rows.length >= 100 && L_Chunk.rows.length < 100){
             const lastIndex = chunkState.chunkCount - 1;
 
-            const newData = [...lastChunk.rows, {...newRow, id: lastChunk.rows.length}];
-            const updatedLastChunk = { ...lastChunk, rows: newData };
+            const newData = [...L_Chunk.rows, {...newRow, id: L_Chunk.rows.length}];
+            const updatedLastChunk = { ...L_Chunk, rows: newData };
 
             await saveToIndexedDB(updatedLastChunk, 'data', lastIndex);
             skipFetch.current = true;
 
             setData(updatedLastChunk);
-            setLastChunk(updatedLastChunk);
             setchunkState(prev => ({...prev, currentChunkIndex: lastIndex}));
             return;
         } 
@@ -228,8 +205,7 @@ const Editor = (csv) => {
             });
             await localforage.setItem('csvMetadata', newMetadata);
 
-            await setData(newChunk);
-            setLastChunk(newChunk);
+            setData(newChunk);
 
             await localforage.setItem(`csvChunk_${chunkState.chunkCount}`, newChunk);
             setchunkState(prev => ({chunkCount: newLastIndex + 1, currentChunkIndex: newLastIndex}) );
@@ -255,15 +231,10 @@ const Editor = (csv) => {
 
     const deleteRow = (rowId) => {
         if(!isDeleteMode) return;
-        let isLast = null;
-        if(chunkState.currentChunkIndex === chunkState.chunkCount - 1){
-            isLast = true;
-        }
         const filtered = data.rows.filter((item) => item.id !== rowId);
         const reindexed = filtered.map((item, index) => ({ ...item, id: index })); 
-        updateChunk(reindexed, null, lastChunk.chunkIndex);
+        updateChunk(reindexed);
     }
-
 
     return(
         <section id="Editor">
