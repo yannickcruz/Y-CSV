@@ -10,7 +10,7 @@
     height: 100%;
 }
 
-#add-column-form{
+#add-column-form, #inner-container{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,6 +21,18 @@
     gap: 0.5rem;
 }
 
+#inner-container{
+    width: 15rem;
+}
+
+#alert-title{
+    color: red;
+}
+
+#alert-text{
+    text-align: center;
+}
+
 #column-name{
     padding: 0.2rem;
 }
@@ -28,6 +40,7 @@
 .editor-btn{
     background-color: var(--bg-color);
     color: var(--txt-color);
+    font-size: 1rem;
 }
 
 .editor-btn:hover{

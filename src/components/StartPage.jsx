@@ -1,8 +1,19 @@
 import "../css/StartPage.css"
 import { NavLink } from "react-router-dom"
 import { useState, useCallback } from "react"
+import CreateNewCSV from './PopUps/CreateNewCSV';
 
 const StartPage = ({openUploader, loadStandardCSV}) => {
+
+    const [openNewCSV, setOpenNewCSV] = useState(false);
+
+    const openNewCSVPopUp = () => {
+        setOpenNewCSV(true);
+    }
+
+    const closeNewCSVPopUp = () => {
+        setOpenNewCSV(false);
+    }
 
     const handleOpen = () => {
         loadStandardCSV();
@@ -18,9 +29,10 @@ const StartPage = ({openUploader, loadStandardCSV}) => {
                     <li className="btn" onClick={handleOpen}>Fazer Upload do CSV</li> 
                     <li className="btn"><NavLink to="/how-use" >Como Usar</NavLink></li>
                     <li className="btn"><NavLink to="/editor" >Acessar Editor</NavLink></li>
-                    <li className="btn"><NavLink to="/editor" state={'new'}>Criar Novo CSV</NavLink></li>
+                    <li className="btn" onClick={openNewCSVPopUp}>Criar Novo CSV</li>
                 </ul>
             </div>
+            <CreateNewCSV isOpen={openNewCSV} onClose={() => setOpenNewCSV(false)}/>
         </section>
     )
 }

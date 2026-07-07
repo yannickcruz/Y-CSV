@@ -333,4 +333,4 @@ const Editor = (csv) => {
     )
 }
 
-export default Editor
+export default Editor;
