@@ -3,12 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CellEdit from "./CellEdit";
 import AddColumn from "./PopUps/AddColumn";
 import localforage from "localforage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Editor = (csv) => {
 
     const textareaRef = useRef(null);
     const skipFetch = useRef(false);
+    const location = useLocation();
 
     const [cell, setCell] = useState(null);
     const [data, setData] = useState(null);
@@ -42,7 +43,18 @@ const Editor = (csv) => {
                     if(metadata && metadata.chunkLength){
                         return metadata.chunkLength;
                     }
-                })
+                });
+                if(location.state === 'new'){
+                    for(let i = 0; i < chunkCount; i++){
+                        await localforage.removeItem(`csvChunk_${i}`);
+                    }
+                    await localforage.removeItem('csvMetadata');
+                    await localforage.removeItem('headers');
+                    setchunkState({chunkCount: 1, currentChunkIndex: 0});
+                    setData({headers: [], rows: [], chunkIndex: 0});
+                    setIsLoading(false);
+                    return;
+                }
                 setchunkState(prev => ({...prev, chunkCount: chunkCount}));
                 const currentIndex = chunkState.currentChunkIndex;
                 

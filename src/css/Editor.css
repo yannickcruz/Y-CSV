@@ -97,6 +97,7 @@
 .main-editor-btns{
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .editor-btn{
@@ -133,4 +134,19 @@
 
 #page-display{
     color: var(--txt-color);
+}
+
+#page-slider{
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+#page-select{
+    background-color: var(--bg-color);
+    color: var(--txt-color);
+    border: 1px solid black;
+    padding: 0.1rem;
+    border-radius: 5px;
 }

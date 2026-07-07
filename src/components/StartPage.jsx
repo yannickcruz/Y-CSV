@@ -17,7 +17,8 @@ const StartPage = ({openUploader, loadStandardCSV}) => {
                 <ul className="start-btns">
                     <li className="btn" onClick={handleOpen}>Fazer Upload do CSV</li> 
                     <li className="btn"><NavLink to="/how-use" >Como Usar</NavLink></li>
-                    <li className="btn"><NavLink to="/editor" >DEV - EDITOR</NavLink></li> {/*Editor colocado temporariamente para construção do componente*/}
+                    <li className="btn"><NavLink to="/editor" >Acessar Editor</NavLink></li>
+                    <li className="btn"><NavLink to="/editor" state={'new'}>Criar Novo CSV</NavLink></li>
                 </ul>
             </div>
         </section>
