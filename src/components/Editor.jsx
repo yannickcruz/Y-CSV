@@ -46,10 +46,14 @@ const Editor = (csv) => {
                 });
                 if(location.state === 'new'){
                     for(let i = 0; i < chunkCount; i++){
-                        await localforage.removeItem(`csvChunk_${i}`);
+                        if(i === 0){
+                            await localforage.setItem(`csvChunk_${i}`, {headers: [], rows: [], chunkIndex: 0});
+                        } else{
+                            await localforage.removeItem(`csvChunk_${i}`);
+                        }          
                     }
-                    await localforage.removeItem('csvMetadata');
-                    await localforage.removeItem('headers');
+                    await localforage.setItem('csvMetadata', {chunkLength: 1, totalItems: 0});
+                    await localforage.setItem('headers', []);
                     setchunkState({chunkCount: 1, currentChunkIndex: 0});
                     setData({headers: [], rows: [], chunkIndex: 0});
                     setIsLoading(false);
