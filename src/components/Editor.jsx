@@ -2,6 +2,7 @@ import "../css/Editor.css"
 import { useCallback, useEffect, useRef, useState } from "react";
 import CellEdit from "./CellEdit";
 import AddColumn from "./PopUps/AddColumn";
+import ErrorPopUp from "./PopUps/ErrorPopUp";
 import localforage from "localforage";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -14,6 +15,7 @@ const Editor = (csv) => {
     const [cell, setCell] = useState(null);
     const [data, setData] = useState(null);
     const [addColumnPopup, setAddColumnPopup] = useState(false);
+    const [ErrorPopUp, setErrorPopUp] = useState(false);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [chunkState, setchunkState] = useState({
@@ -170,6 +172,14 @@ const Editor = (csv) => {
         setAddColumnPopup(false);
     }
 
+    const openError = () => {
+        setErrorPopUp(true);
+    }
+
+    const closeError = () => {
+        setErrorPopUp(false);
+    }
+
     const addNewColumn = async (columnName) => {
 
         for(let i = 0; i < chunkState.chunkCount; i++){
@@ -200,6 +210,12 @@ const Editor = (csv) => {
             acc[header] = '';
             return acc;
         }, {});
+
+        if(data.headers.length === 0){
+            openError();
+            console.log("entrei");
+            return;
+        }
 
         const L_Chunk = await localforage.getItem(`csvChunk_${chunkState.chunkCount - 1}`);
 
@@ -333,6 +349,7 @@ const Editor = (csv) => {
                     
             </div>
             <AddColumn isOpen={addColumnPopup} onClose={() => setAddColumnPopup(false)} onSubmit={addNewColumn} />
+            <ErrorPopUp isOpen={ErrorPopUp} onClose={() => setErrorPopUp(false)}/>
         </section>
     )
 }

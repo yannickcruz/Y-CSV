@@ -6,7 +6,7 @@ const CreateNewCSV = ({isOpen, onClose}) => {
 
     return(
         <div className="PopUp-container">
-            <div id="inner-container">
+            <div class="inner-container" id='create-new-inner'>
                 <h2 id="alert-title">Alerta!</h2>
                 <p id="alert-text">
                     Atenção, ao criar novo CSV, o arquivo anterior será completamente excluído! Deseja continuar?
