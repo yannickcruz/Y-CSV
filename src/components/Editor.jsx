@@ -14,8 +14,10 @@ const Editor = (csv) => {
 
     const [cell, setCell] = useState(null);
     const [data, setData] = useState(null);
-    const [addColumnPopup, setAddColumnPopup] = useState(false);
-    const [ErrorPopUp, setErrorPopUp] = useState(false);
+    const [PopUp, setPopUp] = useState({
+        addColumn: false,
+        rowError: false
+    });
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [chunkState, setchunkState] = useState({
@@ -164,21 +166,15 @@ const Editor = (csv) => {
         );
     }
 
-    const openAddColumnPopup = () => {
-        setAddColumnPopup(true);
-    }
+    const openPopUp = (PopUp_Type) => {
+        if(PopUp_Type === 'AddColumn'){
+            setPopUp(prev => ({...prev, addColumn: true}));
+        }
+        if(PopUp_Type === 'rowError'){
+            setPopUp(prev => ({...prev, rowError: true}));
+        }
+    } 
 
-    const closeAddColumnPopup = () => {
-        setAddColumnPopup(false);
-    }
-
-    const openError = () => {
-        setErrorPopUp(true);
-    }
-
-    const closeError = () => {
-        setErrorPopUp(false);
-    }
 
     const addNewColumn = async (columnName) => {
 
@@ -212,8 +208,7 @@ const Editor = (csv) => {
         }, {});
 
         if(data.headers.length === 0){
-            openError();
-            console.log("entrei");
+            openPopUp('rowError');
             return;
         }
 
@@ -305,7 +300,7 @@ const Editor = (csv) => {
                 <h1 id="editor-title" onClick={() => {navigate('/')}}>Y-CSV</h1>
                 <div id="editor-buttons">
                     <ul className="main-editor-btns">
-                        <li><button className="editor-btn" onClick={openAddColumnPopup}>Adicionar Coluna</button></li>
+                        <li><button className="editor-btn" onClick={() => openPopUp('AddColumn')}>Adicionar Coluna</button></li>
                         <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
                         <li><button className="editor-btn" onClick={() => setIsDeleteMode(!isDeleteMode)}>Remover Linhas/Colunas</button></li>
                         <li id="page-slider">
@@ -348,8 +343,8 @@ const Editor = (csv) => {
                 </table>
                     
             </div>
-            <AddColumn isOpen={addColumnPopup} onClose={() => setAddColumnPopup(false)} onSubmit={addNewColumn} />
-            <ErrorPopUp isOpen={ErrorPopUp} onClose={() => setErrorPopUp(false)}/>
+            <AddColumn isOpen={PopUp.addColumn} onClose={() => setPopUp(prev => ({...prev, addColumn: false}))} onSubmit={addNewColumn} />
+            <ErrorPopUp isOpen={PopUp.rowError} onClose={() => setPopUp(prev => ({...prev, rowError: false}))}/>
         </section>
     )
 }
