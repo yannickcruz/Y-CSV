@@ -150,3 +150,143 @@
     padding: 0.1rem;
     border-radius: 5px;
 }
+
+
+@media(max-width: 992px){
+    #editor-title{
+        font-size: 1.6rem;
+        padding: 0.8rem;
+    }
+
+    #table-container{
+        margin-top: 4.5rem;
+        gap: 0.8rem;
+    }
+
+    .action-button{
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    #csv-table th, #csv-table td{
+        padding: 0.4rem;
+    }
+}
+
+@media(max-width: 768px){
+    #editor-header{
+        flex-wrap: wrap;
+        height: auto;
+    }
+
+    #editor-title{
+        font-size: 1.4rem;
+        padding: 0.6rem;
+    }
+
+    #table-container{
+        margin-top: 6rem; 
+        gap: 0.6rem;
+    }
+
+    .button-list{
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .main-editor-btns{
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .editor-btn{
+        padding: 0.4rem;
+        font-size: 0.7rem;
+    }
+
+    #csv-table th, #csv-table td{
+        padding: 0.3rem;
+        font-size: 0.9rem;
+    }
+
+    #cell-selected{
+        font-size: 0.9rem;
+    }
+}
+
+@media(max-width: 576px){
+    #editor-title{
+        font-size: 1.2rem;
+        padding: 0.5rem;
+    }
+
+    #table-container{
+        margin-top: 7rem;
+        gap: 0.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .action-button{
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .editor-btn{
+        padding: 0.3rem 0.5rem;
+        font-size: 0.65rem;
+        border-radius: 8px;
+    }
+
+    #csv-table th, #csv-table td{
+        padding: 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    #edit-cell{
+        padding: 0.3rem;
+        gap: 0.15rem;
+    }
+
+    #page-display{
+        font-size: 0.85rem;
+    }
+
+    #page-select{
+        font-size: 0.8rem;
+    }
+}
+
+@media(max-width: 400px){
+    #editor-title{
+        font-size: 1rem;
+        padding: 0.4rem;
+    }
+
+    #table-container{
+        margin-top: 7.5rem;
+    }
+
+    .button-list{
+        gap: 0.3rem;
+    }
+
+    .action-button{
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .editor-btn{
+        padding: 0.25rem 0.4rem;
+        font-size: 0.6rem;
+    }
+
+    #csv-table th, #csv-table td{
+        padding: 0.2rem;
+        font-size: 0.75rem;
+    }
+
+    #cell-selected{
+        font-size: 0.75rem;
+    }
+}
