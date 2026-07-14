@@ -5,15 +5,15 @@ import CreateNewCSV from './PopUps/CreateNewCSV';
 
 const StartPage = ({openUploader, loadStandardCSV}) => {
 
-    const [openNewCSV, setOpenNewCSV] = useState(false);
+        const [openNewCSV, setOpenNewCSV] = useState(false);
 
-    const openNewCSVPopUp = () => {
-        setOpenNewCSV(true);
-    }
+        const openNewCSVPopUp = () => {
+            setOpenNewCSV(true);
+        }
 
-    const closeNewCSVPopUp = () => {
-        setOpenNewCSV(false);
-    }
+        const closeNewCSVPopUp = () => {
+            setOpenNewCSV(false);
+        }
 
     const handleOpen = () => {
         loadStandardCSV();
