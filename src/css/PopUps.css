@@ -1,4 +1,5 @@
-.PopUp-container{
+/* ===== Overlay ===== */
+.PopUp-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -6,45 +7,153 @@
     position: fixed;
     z-index: 1000;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.39);
     height: 100%;
+    background-color: rgba(10, 10, 10, 0.65);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
 }
 
-#add-column-form, .inner-container{
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ===== Modal base (compartilhado por todos os popups) ===== */
+#add-column-form,
+.inner-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #ffffff;
-    padding: 1rem;
-    border-radius: 10px;
-    gap: 0.5rem;
+    padding: 1.75rem 2rem;
+    border-radius: 16px;
+    gap: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-#create-new-inner{
-    width: 15rem;
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
-#alert-title{
-    color: red;
+/* ===== Variante específica: criar novo CSV ===== */
+#create-new-inner {
+    width: 17rem;
 }
 
-#alert-text{
+/* ===== Alerta ===== */
+#alert-title {
+    color: #e02424;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#alert-text,
+.PopUp-Text {
     text-align: center;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
 }
 
-#column-name{
-    padding: 0.2rem;
+/* ===== Inputs / Selects ===== */
+#column-name,
+#select-pre-built,
+.PopUp-container input[type="text"],
+.PopUp-container select {
+    padding: 10px 14px;
+    border: 1.5px solid #e0e0e5;
+    border-radius: 10px;
+    background-color: #f7f7f9;
+    font-size: 0.95rem;
+    color: #222;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.editor-btn{
-    background-color: var(--bg-color);
-    color: var(--txt-color);
-    font-size: 1rem;
+#column-name:hover,
+#select-pre-built:hover,
+.PopUp-container input[type="text"]:hover,
+.PopUp-container select:hover {
+    border-color: #161616;
 }
 
-.editor-btn:hover{
-    background-color: var(--txt-color);
-    color: var(--bg-color);
-    border: 1px solid black;
+#column-name:focus,
+#select-pre-built:focus,
+.PopUp-container input[type="text"]:focus,
+.PopUp-container select:focus {
+    outline: none;
+    border-color: #161616;
+    box-shadow: 0 0 0 3px rgba(22, 22, 22, 0.1);
+}
+
+#select-pre-built {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='2' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+/* ===== Botões ===== */
+.PopUp-btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1.5px solid #dfdfdf;
+    background-color: #dfdfdf;
+    color: #161616;
+    box-sizing: border-box;
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.PopUp-btn:hover {
+    background-color: #cfcfcf;
+    border-color: #b8b8b8;
+    transform: translateY(-1px);
+}
+
+.PopUp-btn:active {
+    transform: translateY(0);
+}
+
+/* Botão primário (ação principal: Criar, Salvar, Confirmar, etc.) */
+.PopUp-btn.primary,
+.PopUp-btn:first-of-type {
+    background-color: #161616;
+    color: #dfdfdf;
+    border-color: #161616;
+    box-shadow: 0 6px 16px rgba(22, 22, 22, 0.25);
+}
+
+.PopUp-btn.primary:hover,
+.PopUp-btn:first-of-type:hover {
+    background-color: #2b2b2b;
+    border-color: #2b2b2b;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(22, 22, 22, 0.3);
 }

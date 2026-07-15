@@ -1,0 +1,36 @@
+[
+  {
+    "ID": 0,
+    "CSV_Model": "Generic",
+    "Headers": [
+      "Column 1",
+      "Column 2",
+      "Column 3",
+      "Column 4"
+    ]
+  },
+  {
+    "ID": 1,
+    "CSV_Model": "Adobe Stock",
+    "Headers": [
+      "Filename",
+      "Title",
+      "Keywords",
+      "Category",
+      "Releases"
+    ]
+  },
+  {
+    "ID": 2,
+    "CSV_Model": "Shutterstock",
+    "Headers": [
+      "Filename",
+      "Description",
+      "Keywords",
+      "Categories",
+      "Editorial",
+      "Mature content",
+      "Illustration"
+    ]
+  }
+]
