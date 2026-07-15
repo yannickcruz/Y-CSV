@@ -5,6 +5,7 @@ import AddColumn from "./PopUps/AddColumn";
 import ErrorPopUp from "./PopUps/ErrorPopUp";
 import localforage from "localforage";
 import { useNavigate, useLocation } from "react-router-dom";
+import PB_CSV from '../pre-built-csv.json';
 
 const Editor = (csv) => {
 
@@ -40,6 +41,47 @@ const Editor = (csv) => {
         });
     }
 
+    const new_CSV_creator = async () => {
+        if (!location.state) return;
+        const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
+            if (metadata && metadata.chunkLength) {
+                return metadata.chunkLength;
+            }
+        });
+        const Pre_built_CSV = PB_CSV;
+
+        for (let i = 0; i < chunkCount; i++) {
+            await localforage.removeItem(`csvChunk_${i}`);
+        }
+
+        if (location.state === 'new') {
+            await localforage.setItem(`csvChunk_${0}`, { headers: [], rows: [], chunkIndex: 0 });
+            await localforage.setItem('csvMetadata', { chunkLength: 1, totalItems: 0 });
+            await localforage.setItem('headers', []);
+            setchunkState({ chunkCount: 1, currentChunkIndex: 0 });
+            setData({ headers: [], rows: [], chunkIndex: 0 });
+            setIsLoading(false);
+            return;
+        }
+
+        const model = Pre_built_CSV.find(obj => obj.CSV_Model === location.state);
+
+        if (!model) {
+            console.error("Modelo CSV não encontrado.");
+            return;
+        }
+
+        const modelHeaders = model.Headers;
+        await localforage.setItem(`csvChunk_${0}`, { headers: modelHeaders, rows: [], chunkIndex: 0 });
+        await localforage.setItem('csvMetadata', { chunkLength: 1, totalItems: 0 });
+        await localforage.setItem('headers', modelHeaders);
+        setchunkState({ chunkCount: 1, currentChunkIndex: 0 });
+        setData({ headers: modelHeaders, rows: [], chunkIndex: 0 });
+        setIsLoading(false);
+        return;
+
+    }
+
     useEffect(() => {
         const getData = async () => {
             try {
@@ -48,18 +90,7 @@ const Editor = (csv) => {
                         return metadata.chunkLength;
                     }
                 });
-                if (location.state === 'new') {
-                    for (let i = 0; i < chunkCount; i++) {
-                        await localforage.removeItem(`csvChunk_${i}`);
-                    }
-                    await localforage.setItem(`csvChunk_${0}`, { headers: [], rows: [], chunkIndex: 0 });
-                    await localforage.setItem('csvMetadata', { chunkLength: 1, totalItems: 0 });
-                    await localforage.setItem('headers', []);
-                    setchunkState({ chunkCount: 1, currentChunkIndex: 0 });
-                    setData({ headers: [], rows: [], chunkIndex: 0 });
-                    setIsLoading(false);
-                    return;
-                }
+                new_CSV_creator();
                 setchunkState(prev => ({ ...prev, chunkCount: chunkCount }));
                 const currentIndex = chunkState.currentChunkIndex;
 
@@ -81,7 +112,7 @@ const Editor = (csv) => {
         getData();
     }, []);
 
-    
+
 
     useEffect(() => {
         if (skipFetch.current) {
@@ -113,7 +144,7 @@ const Editor = (csv) => {
                 <p>Carregando dados...</p>
             </div>
         );
-    } else{
+    } else {
         if (!data) {
             return (
                 <div id="editor-null">
