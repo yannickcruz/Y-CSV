@@ -5,138 +5,32 @@ import AddColumn from "./PopUps/AddColumn";
 import ErrorPopUp from "./PopUps/ErrorPopUp";
 import localforage from "localforage";
 import { useNavigate, useLocation } from "react-router-dom";
-import PB_CSV from '../pre-built-csv.json';
+import useCsvDataHandler from "./hooks/csvDataHandler";
 
 const Editor = (csv) => {
 
     const textareaRef = useRef(null);
-    const skipFetch = useRef(false);
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const { data,
+        setData,
+        chunkState,
+        setChunkState,
+        isLoading,
+        updateChunk,
+        saveToIndexedDB,
+        editedHeaders,
+        setEditedHeaders,
+        skipFetch } = useCsvDataHandler(location.state, navigate)
 
     const [cell, setCell] = useState(null);
-    const [data, setData] = useState(null);
     const [PopUp, setPopUp] = useState({
         addColumn: false,
         rowError: false
     });
     const [isDeleteMode, setIsDeleteMode] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [chunkState, setchunkState] = useState({
-        chunkCount: 0,
-        currentChunkIndex: 0
-    });
-    const [editedHeaders, setEditedHeaders] = useState(null);
 
-    const navigate = useNavigate();
-
-    const updateChunk = (newRows, newHeaders) => {
-        setData(prev => {
-            const updated = {
-                ...prev,
-                ...(newHeaders && { headers: newHeaders }),
-                ...(newRows && { rows: newRows })
-            };
-            saveToIndexedDB(updated, 'data');
-            return updated;
-        });
-    }
-
-    const new_CSV_creator = async () => {
-        if (!location.state) return;
-        const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
-            if (metadata && metadata.chunkLength) {
-                return metadata.chunkLength;
-            }
-        });
-        const Pre_built_CSV = PB_CSV;
-
-        for (let i = 0; i < chunkCount; i++) {
-            await localforage.removeItem(`csvChunk_${i}`);
-        }
-
-        if (location.state === 'new') {
-            await localforage.setItem(`csvChunk_${0}`, { headers: [], rows: [], chunkIndex: 0 });
-            await localforage.setItem('csvMetadata', { chunkLength: 1, totalItems: 0 });
-            await localforage.setItem('headers', []);
-            setchunkState({ chunkCount: 1, currentChunkIndex: 0 });
-            setData({ headers: [], rows: [], chunkIndex: 0 });
-            setIsLoading(false);
-            return;
-        }
-
-        const model = Pre_built_CSV.find(obj => obj.CSV_Model === location.state);
-
-        if (!model) {
-            console.error("Modelo CSV não encontrado.");
-            return;
-        }
-
-        const modelHeaders = model.Headers;
-        await localforage.setItem(`csvChunk_${0}`, { headers: modelHeaders, rows: [], chunkIndex: 0 });
-        await localforage.setItem('csvMetadata', { chunkLength: 1, totalItems: 0 });
-        await localforage.setItem('headers', modelHeaders);
-        setchunkState({ chunkCount: 1, currentChunkIndex: 0 });
-        setData({ headers: modelHeaders, rows: [], chunkIndex: 0 });
-        setIsLoading(false);
-        return;
-
-    }
-
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
-                    if (metadata && metadata.chunkLength) {
-                        return metadata.chunkLength;
-                    }
-                });
-                new_CSV_creator();
-                setchunkState(prev => ({ ...prev, chunkCount: chunkCount }));
-                const currentIndex = chunkState.currentChunkIndex;
-
-                let currentChunk = await localforage.getItem(`csvChunk_${currentIndex}`);
-                if (currentChunk) {
-                    const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
-                    currentChunk.rows = rowsWithId;
-                    setData(currentChunk);
-                }
-
-                setIsLoading(false);
-
-            } catch (error) {
-                console.error('Error retrieving chunk count from IndexedDB:', error);
-                alert('Erro ao carregar dados do IndexedDB! Voltando para página inicial.');
-                navigate('/');
-            }
-        }
-        getData();
-    }, []);
-
-
-
-    useEffect(() => {
-        if (skipFetch.current) {
-            skipFetch.current = false;
-            return;
-        }
-        const getCurrentChunk = async () => {
-            try {
-                let currentChunk = await localforage.getItem(`csvChunk_${chunkState.currentChunkIndex}`);
-                if (currentChunk) {
-                    if (editedHeaders) {
-                        currentChunk.headers = editedHeaders;
-                        saveToIndexedDB(currentChunk, 'data');
-                    }
-                    const rowsWithId = currentChunk.rows.map((item, index) => ({ id: index, ...item }));
-                    currentChunk.rows = rowsWithId
-                    setData(currentChunk);
-                }
-            } catch (error) {
-                console.error('Error retrieving current chunk from IndexedDB:', error);
-            }
-        }
-        getCurrentChunk();
-    }, [chunkState.currentChunkIndex]);
 
     if (isLoading) {
         return (
@@ -155,19 +49,6 @@ const Editor = (csv) => {
                     </div>
                 </div>
             );
-        }
-    }
-
-    const saveToIndexedDB = (data, type, explicitIndex) => {
-        const currentIndex = explicitIndex ?? chunkState.currentChunkIndex;
-
-        if (type === 'data') {
-            if (data.chunkIndex === currentIndex) {
-                localforage.setItem(`csvChunk_${currentIndex}`, data);
-            }
-        }
-        if (type === 'headers') {
-            localforage.setItem('headers', data);
         }
     }
 
@@ -198,7 +79,10 @@ const Editor = (csv) => {
                     });
                     let chunk = data;
                     chunk.rows = updatedData;
-                    setData(chunk);
+                    setData(prev => ({
+                        ...prev,
+                        rows: updatedData
+                    }));
                     setCell(null);
                     saveToIndexedDB(chunk, 'data');
                 } else {
@@ -239,7 +123,10 @@ const Editor = (csv) => {
 
         const headers = data.headers;
         const newHeaders = [...headers, columnName];
-        closeAddColumnPopup();
+        setPopUp(prev => ({
+            ...prev,
+            addColumn: false
+        }));
         saveToIndexedDB([...headers, columnName], 'headers');
     }
 
@@ -271,7 +158,7 @@ const Editor = (csv) => {
             skipFetch.current = true;
 
             setData(updatedLastChunk);
-            setchunkState(prev => ({ ...prev, currentChunkIndex: lastIndex }));
+            setChunkState(prev => ({ ...prev, currentChunkIndex: lastIndex }));
             return;
         }
 
@@ -296,7 +183,7 @@ const Editor = (csv) => {
             setData(newChunk);
 
             await localforage.setItem(`csvChunk_${chunkState.chunkCount}`, newChunk);
-            setchunkState(prev => ({ chunkCount: newLastIndex + 1, currentChunkIndex: newLastIndex }));
+            setChunkState(prev => ({ chunkCount: newLastIndex + 1, currentChunkIndex: newLastIndex }));
             return;
         }
 
@@ -349,7 +236,7 @@ const Editor = (csv) => {
                             <p id="page-display">Página {chunkState.currentChunkIndex + 1} de {chunkState.chunkCount}</p>
                             <select id="page-select" value={chunkState.currentChunkIndex} onChange={(e) => {
                                 const newIndex = parseInt(e.target.value);
-                                setchunkState(prev => ({ ...prev, currentChunkIndex: newIndex }));
+                                setChunkState(prev => ({ ...prev, currentChunkIndex: newIndex }));
                             }}>
                                 {Array.from({ length: chunkState.chunkCount }, (_, i) => (
                                     <option key={i} value={i}>

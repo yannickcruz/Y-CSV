@@ -27,7 +27,6 @@ const StartPage = ({openUploader, loadStandardCSV}) => {
                 <p id="description">Faça o upload do seu arquivo CSV e comece a analisar seus dados.</p>
                 <ul className="start-btns">
                     <li className="btn" onClick={handleOpen}>Fazer Upload do CSV</li> 
-                    <li className="btn"><NavLink to="/how-use" >Como Usar</NavLink></li>
                     <li className="btn"><NavLink to="/editor" >Acessar Editor</NavLink></li>
                     <li className="btn" onClick={openNewCSVPopUp}>Criar Novo CSV</li>
                 </ul>
