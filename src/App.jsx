@@ -84,7 +84,54 @@ function App() {
     }
   }, [saveToLocalForage, navigate]);
 
+  const downloadCSV = async (filename = "data.csv") => {
+    try {
+      const metadata = await localforage.getItem('csvMetadata');
+      if (!metadata?.chunkLength) {
+        alert("Nenhum dado para baixar.");
+        return;
+      }
 
+      const chunks = [];
+      for (let i = 0; i < metadata.chunkLength; i++) {
+        const chunk = await localforage.getItem(`csvChunk_${i}`);
+        if (chunk) {
+          chunks.push({
+            chunk_index: chunk.chunkIndex,
+            headers: chunk.headers,
+            rows: chunk.rows.map(row => {
+              const { id: _, ...rest } = row;
+              return rest;
+            })
+          });
+        }
+      }
+
+      const payload = { chunks, filename };
+
+      const response = await fetch(`${url}/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao baixar CSV: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      a.remove();
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+    }
+  };
 
 
   return(
@@ -93,7 +140,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Layout />}>
           <Route index element={<StartPage openUploader={setUploaderOpen} loadStandardCSV={loadStandardCSV} />} />
-          <Route path='editor' element={<Editor />} />
+          <Route path='editor' element={<Editor downloadCSV={downloadCSV} />} />
         </Route>
       </Routes>
     </>

@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useCsvDataHandler from "./hooks/csvDataHandler";
 import useCsvCRUD from "./hooks/csvCRUD";
 
-const Editor = (csv) => {
+const Editor = ({ downloadCSV }) => {
 
     const textareaRef = useRef(null);
     const location = useLocation();
@@ -107,6 +107,7 @@ const Editor = (csv) => {
                         <li><button className="editor-btn" onClick={() => openPopUp('AddColumn')}>Adicionar Coluna</button></li>
                         <li><button className="editor-btn" onClick={addRow}>Adicionar Linha</button></li>
                         <li><button className="editor-btn" onClick={() => setIsDeleteMode(!isDeleteMode)}>Remover Linhas/Colunas</button></li>
+                        <li><button className="editor-btn" onClick={() => downloadCSV()}>Baixar CSV</button></li>
                         <li id="page-slider">
                             <p id="page-display">Página {chunkState.currentChunkIndex + 1} de {chunkState.chunkCount}</p>
                             <select id="page-select" value={chunkState.currentChunkIndex} onChange={(e) => {
