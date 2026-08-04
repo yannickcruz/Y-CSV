@@ -1,16 +1,64 @@
-# React + Vite
+# Y-CSV
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Editor de arquivos CSV baseado em navegador, construído com React e Vite. O Y-CSV permite importar, visualizar, editar e gerenciar arquivos CSV diretamente no navegador, com persistência local via IndexedDB — sem depender de um back-end para manter os dados entre sessões.
 
-Currently, two official plugins are available:
+## ✨ Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Importação de arquivos CSV** — carregue arquivos `.csv` diretamente no navegador para visualização e edição.
+- **Edição em tabela** — visualize e edite os dados em formato de planilha, com atualização em tempo real.
+- **Persistência local (armazenamento offline)** — os dados são salvos localmente via IndexedDB (usando `localforage`), permitindo que o trabalho seja mantido entre sessões sem precisar reenviar o arquivo.
+- **Arquitetura de armazenamento em chunks** — arquivos grandes são armazenados em blocos (chunks), otimizando performance e uso de memória ao lidar com datasets maiores.
+- **Navegação em múltiplas telas** — roteamento entre páginas/views da aplicação usando `react-router-dom`.
+- **Interface com ícones modernos** — uso da biblioteca `lucide-react` para uma UI limpa e consistente.
+- **Exportação de dados** — possibilidade de exportar os dados editados de volta para CSV.
 
-## React Compiler
+> Algumas funcionalidades podem variar conforme a evolução do projeto — consulte o código-fonte em `src/` para o estado mais atualizado.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologias utilizadas
 
-## Expanding the ESLint configuration
+| Tecnologia | Finalidade |
+|---|---|
+| [React 19](https://react.dev/) | Biblioteca principal para construção da interface |
+| [Vite](https://vitejs.dev/) | Bundler e servidor de desenvolvimento |
+| [React Router DOM](https://reactrouter.com/) | Roteamento entre páginas da aplicação |
+| [localforage](https://github.com/localForage/localForage) | Armazenamento offline assíncrono (IndexedDB) para persistência dos dados CSV |
+| [lucide-react](https://lucide.dev/) | Ícones SVG para a interface |
+| [ESLint](https://eslint.org/) | Padronização e qualidade de código |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Como executar localmente
+
+Pré-requisitos: [Node.js](https://nodejs.org/) instalado.
+
+```bash
+# Clone o repositório
+git clone https://github.com/yannickcruz/Y-CSV.git
+cd Y-CSV
+
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento
+npm run dev
+```
+
+A aplicação estará disponível em `http://localhost:5173` (porta padrão do Vite).
+
+### Outros scripts disponíveis
+
+```bash
+npm run build     # Gera a versão de produção (pasta dist/)
+npm run preview   # Executa uma prévia local do build de produção
+npm run lint      # Roda o ESLint no projeto
+```
+
+## 📁 Estrutura do projeto
+
+```
+Y-CSV/
+├── public/          # Arquivos estáticos
+├── src/             # Código-fonte da aplicação (componentes, páginas, lógica de storage)
+├── index.html        # Ponto de entrada HTML
+├── vite.config.js    # Configuração do Vite
+├── eslint.config.js  # Configuração do ESLint
+└── package.json      # Dependências e scripts
+```
