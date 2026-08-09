@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useCsvDataHandler from "./hooks/csvDataHandler";
 import useCsvCRUD from "./hooks/csvCRUD";
 
-const Editor = ({ downloadCSV }) => {
+const Editor = ({ downloadCSV, operationError, close }) => {
 
     const textareaRef = useRef(null);
     const location = useLocation();
@@ -97,6 +97,8 @@ const Editor = ({ downloadCSV }) => {
             }} />
         );
     }
+
+    if(operationError) return <ErrorScreen errType={'operation'} close={setOperationError}/>;
 
     return (
         <section id="Editor">

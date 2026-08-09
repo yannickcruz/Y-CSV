@@ -13,6 +13,41 @@
     animation: fadeIn 0.2s ease-out;
 }
 
+#full-screen-component{
+    width: 100%;
+    display: flex;
+    flex: 1 ;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--bg-color);
+    min-height: 100dvh;
+}
+
+#fs_content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 10rem;
+}
+
+.fs-title{
+    font-family: 'BebasNeue', Arial, Helvetica, sans-serif;
+    letter-spacing: 0.2rem;
+    color: var(--txt-color);
+    font-size: 3rem;
+}
+
+#err-title{
+    color: #e02424;
+}
+
+.fs-text{
+    color: var(--txt-color);
+    font-size: 1.5rem;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -113,7 +148,7 @@
 }
 
 /* ===== Botões ===== */
-.PopUp-btn {
+.PopUp-btn, #fs-return {
     width: 100%;
     text-align: center;
     padding: 10px 20px;
@@ -130,7 +165,7 @@
                 background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.PopUp-btn:hover {
+.PopUp-btn:hover #fs-return:hover{
     background-color: #cfcfcf;
     border-color: #b8b8b8;
     transform: translateY(-1px);

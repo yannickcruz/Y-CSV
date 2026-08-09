@@ -2,25 +2,19 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import StartPage from './components/StartPage'
 import Editor from './components/Editor'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import UploadFile from './components/PopUps/UploadFile'
 import localforage from "localforage";
-
+import LoadingScreen from './components/PopUps/loadingScreen'
+import usePingServer from './components/hooks/usePingServer';
+import ErrorScreen from './components/PopUps/errorScreen'
 
 function App({ csvAPI }) {
 
   const [uploaderOpen, setUploaderOpen] = useState(false);
-  const url = 'http://127.0.0.1:7056';
+  const serverStatus = usePingServer(csvAPI);
+  const [operationError, setOperationError] = useState(null);
   const navigate = useNavigate();
-
-  const loadStandardCSV = async () => {
-    try {
-      const data = await csvAPI.loadStandardCSV();
-
-    } catch (error) {
-      console.error('Error loading CSV data:', error);
-    }
-  }
 
   const saveToLocalForage = useCallback(async (headers, chunks) => {
     try {
@@ -69,6 +63,7 @@ function App({ csvAPI }) {
       }
     } catch (error) {
       console.error('Error uploading CSV:', error);
+      setOperationError(true);
     }
   }, [saveToLocalForage, navigate]);
 
@@ -100,6 +95,7 @@ function App({ csvAPI }) {
       const response = await csvAPI.downloadCSV(payload);
 
       if (!response.ok) {
+        setOperationError(true);
         throw new Error(`Erro ao baixar CSV: ${response.statusText}`);
       }
 
@@ -117,14 +113,18 @@ function App({ csvAPI }) {
     }
   };
 
+  if(serverStatus.status === "loading") return <LoadingScreen attempts={serverStatus.attempts}/>;
+  if(serverStatus.status === "error") return <ErrorScreen errType={'serverFault'}/>;
+  if(operationError) return <ErrorScreen errType={'operation'} close={setOperationError}/>;
+
 
   return (
     <>
       {uploaderOpen && <UploadFile isClose={setUploaderOpen} submit={uploadCSV} />}
       <Routes>
         <Route path='/' element={<Layout />}>
-          <Route index element={<StartPage openUploader={setUploaderOpen} loadStandardCSV={loadStandardCSV} />} />
-          <Route path='editor' element={<Editor downloadCSV={downloadCSV} />} />
+          <Route index element={<StartPage openUploader={setUploaderOpen}/>} />
+          <Route path='editor' element={<Editor downloadCSV={downloadCSV} operationError={operationError} closeOperationError={setOperationError}/>} />
         </Route>
       </Routes>
     </>

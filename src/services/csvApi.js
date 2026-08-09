@@ -1,21 +1,15 @@
 export const createCSVAPI = (url) => {
 
     return {
-        async loadStandardCSV() {
-            try {
-                const response = await fetch(`${url}/`);
 
-                if (!response.ok) {
-                    throw new Erros('Failed to load CSV data');
-                    alert('Failed to load CSV data');
-                }
-
-               return response.json();
-
-
-            } catch (error) {
-                console.error('Error loading CSV data:', error);
+        async pingAPI(){
+            const response = await fetch(`${url}/`);
+            if(!response.ok){
+                throw new Error('Failed to get data from CSV API');
+                return;
             }
+
+            return response.json();
         },
 
         async uploadCSV(formData) {

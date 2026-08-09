@@ -16,7 +16,6 @@ const StartPage = ({openUploader, loadStandardCSV}) => {
         }
 
     const handleOpen = () => {
-        loadStandardCSV();
         openUploader(true);
     }
 
