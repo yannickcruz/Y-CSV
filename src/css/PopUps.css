@@ -192,3 +192,22 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(22, 22, 22, 0.3);
 }
+
+@media(max-width: 640px){
+    #fs_content{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .fs-title{
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .fs-text{
+        font-size: 1rem;
+        text-align: center;
+    }
+}
