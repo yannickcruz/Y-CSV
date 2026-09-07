@@ -21,7 +21,7 @@ const usePingServer = (csvAPI) => {
             } catch(error) {
                 setAttempts(++attempts);
 
-                if (attempts >= 3) {
+                if (attempts >= 30) {
                     setStatus("error");
                     return;
                 }
