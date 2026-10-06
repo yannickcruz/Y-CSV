@@ -9,16 +9,16 @@ const useCsvDataHandler = (locationState, navigate) => {
     const [editedHeaders, setEditedHeaders] = useState(null);
     const skipFetch = useRef(false);
 
-    const saveToIndexedDB = (data, type, explicitIndex) => {
+    const saveToIndexedDB = async (data, type, explicitIndex) => {
         const currentIndex = explicitIndex ?? chunkState.currentChunkIndex;
 
         if (type === 'data') {
             if (data.chunkIndex === currentIndex) {
-                localforage.setItem(`csvChunk_${currentIndex}`, data);
+                await localforage.setItem(`csvChunk_${currentIndex}`, data);
             }
         }
         if (type === 'headers') {
-            localforage.setItem('headers', data);
+            await localforage.setItem('headers', data);
         }
     }
 
@@ -35,7 +35,9 @@ const useCsvDataHandler = (locationState, navigate) => {
     }
 
     const new_CSV_creator = async () => {
-        if (!locationState) return;
+        if (!locationState){
+            return;
+        }
         const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
             if (metadata && metadata.chunkLength) {
                 return metadata.chunkLength;
@@ -78,12 +80,15 @@ const useCsvDataHandler = (locationState, navigate) => {
     useEffect(() => {
         const getData = async () => {
             try {
+                if(locationState){
+                    await new_CSV_creator();
+                    navigate(location.pathname, { replace: true, state: null });
+                }
                 const chunkCount = await localforage.getItem('csvMetadata').then((metadata) => {
                     if (metadata && metadata.chunkLength) {
                         return metadata.chunkLength;
                     }
                 });
-                await new_CSV_creator();
                 setChunkState(prev => ({ ...prev, chunkCount: chunkCount }));
                 const currentIndex = chunkState.currentChunkIndex;
 
