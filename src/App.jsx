@@ -2,7 +2,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import StartPage from './components/StartPage'
 import Editor from './components/Editor'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import UploadFile from './components/PopUps/UploadFile'
 import localforage from "localforage";
 import LoadingScreen from './components/PopUps/loadingScreen'

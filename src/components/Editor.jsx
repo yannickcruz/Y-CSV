@@ -1,16 +1,14 @@
 import "../css/Editor.css"
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CellEdit from "./CellEdit";
 import AddColumn from "./PopUps/AddColumn";
 import ErrorPopUp from "./PopUps/ErrorPopUp";
-import localforage from "localforage";
 import { useNavigate, useLocation } from "react-router-dom";
 import useCsvDataHandler from "./hooks/csvDataHandler";
 import useCsvCRUD from "./hooks/csvCRUD";
 
-const Editor = ({ downloadCSV, operationError, close }) => {
+const Editor = ({ downloadCSV, operationError}) => {
 
-    const textareaRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -21,8 +19,6 @@ const Editor = ({ downloadCSV, operationError, close }) => {
         isLoading,
         updateChunk,
         saveToIndexedDB,
-        editedHeaders,
-        setEditedHeaders,
         skipFetch } = useCsvDataHandler(location.state, navigate);
     
     const {openPopUp,

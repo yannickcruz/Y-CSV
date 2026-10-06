@@ -3,16 +3,12 @@ import { NavLink } from "react-router-dom"
 import { useState, useCallback } from "react"
 import CreateNewCSV from './PopUps/CreateNewCSV';
 
-const StartPage = ({openUploader, loadStandardCSV}) => {
+const StartPage = ({openUploader}) => {
 
         const [openNewCSV, setOpenNewCSV] = useState(false);
 
         const openNewCSVPopUp = () => {
             setOpenNewCSV(true);
-        }
-
-        const closeNewCSVPopUp = () => {
-            setOpenNewCSV(false);
         }
 
     const handleOpen = () => {

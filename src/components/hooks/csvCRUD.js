@@ -1,5 +1,4 @@
 import localforage from "localforage";
-import useCsvDataHandler from "./csvDataHandler";
 import { useState, useRef } from "react";
 
 const useCsvCRUD = (data, setData, chunkState, setChunkState, updateChunk, saveToIndexedDB, skipFetch) => {
