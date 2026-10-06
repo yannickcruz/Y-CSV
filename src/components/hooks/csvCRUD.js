@@ -8,6 +8,7 @@ const useCsvCRUD = (data, setData, chunkState, setChunkState, updateChunk, saveT
         rowError: false
     });
     const [isDeleteMode, setIsDeleteMode] = useState(false);
+    const isDeletingRef = useRef(false);
 
     const openPopUp = (PopUp_Type) => {
         if (PopUp_Type === 'AddColumn') {
@@ -133,14 +134,56 @@ const useCsvCRUD = (data, setData, chunkState, setChunkState, updateChunk, saveT
         saveToIndexedDB(data.headers.filter(h => h !== columnName), 'headers');
     }
 
-    const deleteRow = (rowId) => {
-        if (!isDeleteMode) return;
-        const filtered = data.rows.filter((item) => item.id !== rowId);
-        const reindexed = filtered.map((item, index) => ({ ...item, id: index }));
-        updateChunk(reindexed);
-    }
+    const deleteRow = async (rowId) => {
+        if (!isDeleteMode || isDeletingRef.current) return;
+        isDeletingRef.current = true;
 
-    return{
+        try {
+            const reindex = (rows) => rows.map((row, index) => ({ ...row, id: index }));
+            const saveChunk = (chunk) =>
+                localforage.setItem(`csvChunk_${chunk.chunkIndex}`, { ...chunk, rows: reindex(chunk.rows) });
+
+            const metadata = await localforage.getItem('csvMetadata');
+            const lastIndex = metadata.chunkLength - 1;
+            const currentIndex = data.chunkIndex;
+
+            let working = { ...data, rows: data.rows.filter((item) => item.id !== rowId) };
+
+            for (let i = currentIndex + 1; i <= lastIndex; i++) {
+                const next = await localforage.getItem(`csvChunk_${i}`);
+                if (!next || next.rows.length === 0) break;
+
+                const [firstRow, ...restRows] = next.rows;
+                working = { ...working, rows: [...working.rows, firstRow] };
+                await saveChunk(working);
+
+                working = { ...next, rows: restRows };
+            }
+
+            let removedLastPage = false;
+            if (working.rows.length === 0 && working.chunkIndex > 0) {
+                await localforage.removeItem(`csvChunk_${working.chunkIndex}`);
+                await localforage.setItem('csvMetadata', { ...metadata, chunkLength: working.chunkIndex });
+                removedLastPage = true;
+            } else {
+                await saveChunk(working);
+            }
+
+            const newChunkCount = removedLastPage ? lastIndex : lastIndex + 1;
+
+            if (removedLastPage && currentIndex === lastIndex) {
+                setChunkState({ chunkCount: newChunkCount, currentChunkIndex: currentIndex - 1 });
+            } else {
+                const refreshed = await localforage.getItem(`csvChunk_${currentIndex}`);
+                setData(refreshed);
+                setChunkState((prev) => ({ ...prev, chunkCount: newChunkCount }));
+            }
+        } finally {
+            isDeletingRef.current = false;
+        }
+    };
+
+    return {
         openPopUp, addNewColumn, addRow, deleteColumn, deleteRow, PopUp, setPopUp, isDeleteMode, setIsDeleteMode
     }
 }
